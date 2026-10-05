@@ -1,4 +1,17 @@
+# Compilados / empaquetados
 build/
 dist/
 *.spec
 __pycache__/
+*.pyc
+
+# Entornos y secretos
+.venv/
+venv/
+.env
+
+# Editores / sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -5,6 +5,8 @@ import random
 import array
 import os
 
+from conexion import Conexion
+
 # ---- RUTA BASE (funciona en Python normal, PyInstaller y navegador con pygbag) ----
 EN_NAVEGADOR = sys.platform == "emscripten"
 
@@ -194,6 +196,60 @@ IDX_OGURI  = 1
 IDX_CONDOR = 2
 IDX_JUNGLE = 3
 
+# ---- UMARACING ONLINE (solo agrega; no cambia la carrera) ----
+# Código de cada personaje en la tienda, en el mismo orden que CHAR_DATA
+CODIGOS_PERSONAJE = ["goldship", "oguricap", "elcondorpasa", "junglepocket"]
+conexion = Conexion()
+desbloqueado = [True] * len(CHAR_DATA)   # sin conexión (escritorio) todo queda disponible, como el original
+precios = [0] * len(CHAR_DATA)
+escenario_actual = "clasico"
+
+def make_candado(size=56):
+    surf = pygame.Surface((size, size), pygame.SRCALPHA)
+    cuerpo = pygame.Rect(size * 0.18, size * 0.45, size * 0.64, size * 0.5)
+    pygame.draw.arc(surf, COL_WHITE, (size * 0.3, size * 0.1, size * 0.4, size * 0.7), 0, 3.1416, 6)
+    pygame.draw.rect(surf, COL_GOLD, cuerpo, border_radius=6)
+    pygame.draw.rect(surf, COL_BLACK, cuerpo, 2, border_radius=6)
+    pygame.draw.circle(surf, COL_BLACK, cuerpo.center, 5)
+    return surf
+
+candado_img = make_candado()
+
+def aplicar_config(cfg):
+    """Marca qué personajes puede usar el jugador según su inventario en la API."""
+    global escenario_actual
+    personajes = cfg.get("personajes", {})
+    for i, codigo in enumerate(CODIGOS_PERSONAJE):
+        info = personajes.get(codigo, {})
+        desbloqueado[i] = bool(info.get("desbloqueado", False))
+        precios[i] = info.get("precio", 0)
+    escenario_actual = cfg.get("escenario", "clasico")
+    aplicar_escenario(escenario_actual)
+
+def aplicar_escenario(codigo):
+    """Carga escenarios/<codigo>/ (fondo.png, calle.png, calle2.png) si existe; si no, queda el clásico."""
+    global background, bg_width, moving_img, moving_img2
+    carpeta = f"escenarios/{codigo}"
+    if codigo == "clasico" or not os.path.exists(f"{carpeta}/fondo.png"):
+        return
+    try:
+        fondo = pygame.image.load(f"{carpeta}/fondo.png").convert()
+        escala = bg_target_height / fondo.get_height()
+        bg_width = int(fondo.get_width() * escala)
+        background = pygame.transform.scale(fondo, (bg_width, bg_target_height))
+        moving_img = pygame.transform.scale(pygame.image.load(f"{carpeta}/calle.png").convert_alpha(), (1200, 200))
+        moving_img2 = pygame.transform.scale(pygame.image.load(f"{carpeta}/calle2.png").convert_alpha(), (1200, 200))
+    except Exception as e:
+        print(f"No se pudo cargar el escenario {codigo}: {e}")
+
+def draw_bloqueado(surface, img_x, img_y, iw, ih, precio):
+    sombra = pygame.Surface((iw, ih), pygame.SRCALPHA)
+    sombra.fill((0, 0, 0, 140))
+    surface.blit(sombra, (img_x, img_y))
+    surface.blit(candado_img, (img_x + iw // 2 - candado_img.get_width() // 2, img_y + ih // 2 - 40))
+    draw_text_shadow(surface, font_tiny, "BLOQUEADA", COL_GOLD, img_x + iw // 2, img_y + ih // 2 + 24, offset=1, center=True)
+    draw_text_shadow(surface, font_tiny, f"{precio} monedas", COL_WHITE, img_x + iw // 2, img_y + ih // 2 + 42, offset=1, center=True)
+
 # ---- FLECHAS QUE APUNTAN HACIA ABAJO (para pantalla de selección) ----
 def make_down_arrow(color, size=36):
     surf = pygame.Surface((size, size), pygame.SRCALPHA)
@@ -328,6 +384,12 @@ def draw_text_shadow(surface, font, text, color, x, y, shadow_col=COL_BLACK, off
     surface.blit(txt, (x, y))
 
 async def main():
+    # ---- UmaRacing Online: personajes desbloqueados y escenario equipado del jugador ----
+    if conexion.en_linea:
+        r = await conexion.pedir("GET", "/juego/config")
+        if r.get("ok"):
+            aplicar_config(r["datos"])
+
     # ===============================================================
     #  ESTADO GLOBAL
     # ===============================================================
@@ -410,8 +472,10 @@ async def main():
                                 else:
                                     if snd_pop: snd_pop.play()
                             if event.key == pygame.K_w:
-                                confirm_p1 = True
-                                if snd_seleccion: snd_seleccion.play()
+                                if desbloqueado[sel_p1]:
+                                    confirm_p1 = True
+                                    if snd_seleccion: snd_seleccion.play()
+                                elif snd_pop: snd_pop.play()  # bloqueada: se compra en la tienda
                         if not confirm_p2:
                             if event.key == pygame.K_LEFT:
                                 sel_p2 = (sel_p2 - 1) % num_chars
@@ -424,8 +488,10 @@ async def main():
                                 else:
                                     if snd_pop: snd_pop.play()
                             if event.key == pygame.K_UP:
-                                confirm_p2 = True
-                                if snd_seleccion: snd_seleccion.play()
+                                if desbloqueado[sel_p2]:
+                                    confirm_p2 = True
+                                    if snd_seleccion: snd_seleccion.play()
+                                elif snd_pop: snd_pop.play()  # bloqueada: se compra en la tienda
 
                 # ---- Dibujar banner con crossfade ----
                 ms_x = WIDTH // 2 - selection_ms_img.get_width() // 2
@@ -478,6 +544,8 @@ async def main():
                     img_x = cx - iw // 2
                     img_y = HEIGHT // 2 - ih // 2 - 10
                     screen.blit(scaled_img, (img_x, img_y))
+                    if not desbloqueado[i]:
+                        draw_bloqueado(screen, img_x, img_y, iw, ih, precios[i])
 
                     # Parpadeo blanco semitransparente sobre la imagen al confirmar
                     if confirmed and blink_visible:
@@ -577,6 +645,22 @@ async def main():
         btn_select  = pygame.Rect(WIDTH // 2 + 20,          HEIGHT // 2 + 10, btn_w, btn_h)
         menu_opt    = 0
 
+        # ---- UmaRacing Online: el servidor registra el inicio y valida los personajes ----
+        partida_token = None
+        id_final = None
+        resultado_online = None
+        taps1 = taps2 = 0
+        if conexion.en_linea:
+            r = await conexion.pedir("POST", "/partidas", {
+                "personaje_j1": CODIGOS_PERSONAJE[char_p1],
+                "personaje_j2": CODIGOS_PERSONAJE[char_p2],
+                "escenario": escenario_actual,
+            })
+            if r.get("ok"):
+                partida_token = r["datos"]["token"]
+            else:
+                resultado_online = r
+
         # ====================== COUNTDOWN ======================
         pygame.mixer.stop()
         if snd_321:
@@ -616,6 +700,7 @@ async def main():
         fi_p1 = fi_p2 = 0.0
         game_state = "race"
         post_action = None
+        t_carrera = pygame.time.get_ticks()  # UmaRacing Online: duración de la carrera
 
         # ====================== LOOP DE CARRERA ======================
         while post_action is None:
@@ -631,10 +716,10 @@ async def main():
                     if event.key == pygame.K_F11:
                         toggle_fullscreen()
                     if not game_over:
-                        if   event.key == pygame.K_a     and lk1 != pygame.K_a:     sp1 += 1; lk1 = pygame.K_a
-                        elif event.key == pygame.K_d     and lk1 != pygame.K_d:     sp1 += 1; lk1 = pygame.K_d
-                        if   event.key == pygame.K_LEFT  and lk2 != pygame.K_LEFT:  sp2 += 1; lk2 = pygame.K_LEFT
-                        elif event.key == pygame.K_RIGHT and lk2 != pygame.K_RIGHT: sp2 += 1; lk2 = pygame.K_RIGHT
+                        if   event.key == pygame.K_a     and lk1 != pygame.K_a:     sp1 += 1; lk1 = pygame.K_a; taps1 += 1
+                        elif event.key == pygame.K_d     and lk1 != pygame.K_d:     sp1 += 1; lk1 = pygame.K_d; taps1 += 1
+                        if   event.key == pygame.K_LEFT  and lk2 != pygame.K_LEFT:  sp2 += 1; lk2 = pygame.K_LEFT; taps2 += 1
+                        elif event.key == pygame.K_RIGHT and lk2 != pygame.K_RIGHT: sp2 += 1; lk2 = pygame.K_RIGHT; taps2 += 1
                     else:
                         if event.key in (pygame.K_LEFT, pygame.K_a):
                             menu_opt = 0
@@ -708,6 +793,14 @@ async def main():
                     final_snd = snd_c1final if current_carrera == 1 else snd_c2final
                     if final_snd:
                         final_snd.play()
+                    # UmaRacing Online: el servidor valida el resultado y calcula puntaje y monedas
+                    if partida_token:
+                        id_final = conexion.enviar("POST", f"/partidas/{partida_token}/finalizar", {
+                            "ganador": "J1" if winner == "Jugador 1" else "J2",
+                            "duracion_ms": pygame.time.get_ticks() - t_carrera,
+                            "pulsaciones_j1": taps1,
+                            "pulsaciones_j2": taps2,
+                        })
 
             # ======================================================
             # CAPAS DE DIBUJO
@@ -901,6 +994,25 @@ async def main():
                     screen.blit(img_s, (bx_s - (sw - bw_s) // 2, by_s - (sh - bh_s) // 2))
                 else:
                     screen.blit(personajes_button_img, (bx_s, by_s))
+
+                # ---- UmaRacing Online: resultado devuelto por el servidor ----
+                if id_final and resultado_online is None:
+                    resultado_online = conexion.recoger(id_final)
+                if conexion.en_linea:
+                    if resultado_online is None:
+                        texto, color = "Guardando resultado...", COL_CREAM
+                    elif resultado_online.get("ok"):
+                        d = resultado_online["datos"]
+                        texto = f"+{d['monedas_ganadas']} monedas   |   {d['puntaje']} puntos"
+                        if d.get("logros_nuevos"):
+                            texto += f"   |   Logro: {d['logros_nuevos'][0]['nombre']}"
+                        color = COL_GOLD
+                    else:
+                        texto, color = f"Partida no registrada: {resultado_online.get('mensaje', '')}"[:90], (255, 140, 120)
+                    panel = pygame.Surface((WIDTH, 34), pygame.SRCALPHA)
+                    panel.fill((0, 0, 0, 150))
+                    screen.blit(panel, (0, HEIGHT - 40))
+                    draw_text_shadow(screen, font_small, texto, color, WIDTH // 2, HEIGHT - 34, offset=1, center=True)
 
             pygame.display.flip()
 

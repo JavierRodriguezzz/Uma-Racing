@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Historial · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+</head>
+<body data-pagina="historial" data-titulo="Historial y estadísticas" data-roles="jugador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Mis estadísticas</h2>
+        <form class="filtros" id="f-stats" style="margin:0">
+          <div class="campo"><label for="s-desde">Desde</label><input type="date" id="s-desde" name="desde"></div>
+          <div class="campo"><label for="s-hasta">Hasta</label><input type="date" id="s-hasta" name="hasta"></div>
+        </form></div>
+      <div class="grid grid-2">
+        <div><h3>Partidas y victorias por día</h3><div id="g-dias"></div></div>
+        <div><h3>Victorias por personaje (como J1)</h3><div id="g-personajes"></div></div>
+      </div>
+    </section>
+
+    <section class="tarjeta" id="partidas">
+      <div class="tarjeta-titulo"><h2>Partidas</h2></div>
+      <form class="filtros" id="f-partidas">
+        <div class="campo"><label for="p-ganador">Resultado</label>
+          <select id="p-ganador" name="ganador"><option value="">Todos</option><option value="J1">Victorias</option><option value="J2">Derrotas</option></select></div>
+        <div class="campo"><label for="p-estado">Estado</label>
+          <select id="p-estado" name="estado"><option value="">Todos</option><option value="finalizada">Válidas</option><option value="invalida">Rechazadas</option></select></div>
+        <div class="campo"><label for="p-personaje">Personaje J1</label>
+          <select id="p-personaje" name="personaje"><option value="">Todos</option><option value="goldship">Gold Ship</option><option value="oguricap">Oguri Cap</option>
+            <option value="elcondorpasa">El Condor Pasa</option><option value="junglepocket">Jungle Pocket</option></select></div>
+        <div class="campo"><label for="p-desde">Desde</label><input type="date" id="p-desde" name="desde"></div>
+        <div class="campo"><label for="p-hasta">Hasta</label><input type="date" id="p-hasta" name="hasta"></div>
+      </form>
+      <div id="t-partidas"></div>
+    </section>
+
+    <section class="tarjeta" id="movimientos">
+      <div class="tarjeta-titulo"><h2>Movimientos de monedas</h2></div>
+      <form class="filtros" id="f-mov">
+        <div class="campo"><label for="m-tipo">Tipo</label>
+          <select id="m-tipo" name="tipo"><option value="">Todos</option><option value="partida">Partidas</option><option value="anuncio">Anuncios</option>
+            <option value="compra">Compras</option><option value="logro">Logros</option><option value="reembolso">Reembolsos</option><option value="ajuste">Ajustes</option><option value="registro">Registro</option></select></div>
+        <div class="campo"><label for="m-desde">Desde</label><input type="date" id="m-desde" name="desde"></div>
+        <div class="campo"><label for="m-hasta">Hasta</label><input type="date" id="m-hasta" name="hasta"></div>
+      </form>
+      <div id="t-mov"></div>
+    </section>
+
+    <section class="tarjeta" id="compras">
+      <div class="tarjeta-titulo"><h2>Mis compras</h2></div>
+      <div id="t-compras"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/paginas/historial.js"></script>
+</body>
+</html>

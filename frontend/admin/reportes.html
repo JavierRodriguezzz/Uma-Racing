@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reportes · UmaRacing Admin</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+</head>
+<body data-pagina="reportes" data-titulo="Reportes y estadísticas" data-roles="administrador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <form class="filtros" id="filtros" style="margin:0">
+        <div class="campo"><label for="desde">Fecha inicial</label><input type="date" id="desde" name="desde" required></div>
+        <div class="campo"><label for="hasta">Fecha final</label><input type="date" id="hasta" name="hasta" required></div>
+        <div class="fila" style="flex:2 1 300px">
+          <button type="button" class="btn btn-sm" data-dias="7">7 días</button>
+          <button type="button" class="btn btn-sm" data-dias="30">30 días</button>
+          <button type="button" class="btn btn-sm" data-dias="60">60 días</button>
+          <span class="espaciador"></span>
+          <button type="button" class="btn btn-sm" id="exportar">⬇ Exportar CSV</button>
+        </div>
+      </form>
+      <div id="error-rango"></div>
+    </section>
+
+    <section class="grid grid-kpi" id="kpis"></section>
+
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Reporte 1 · Actividad de partidas</h2></div>
+      <div class="grid grid-2">
+        <div><h3>Partidas por día</h3><div id="g-partidas"></div></div>
+        <div><h3>Uso de personajes (Jugador 1)</h3><div id="g-personajes"></div></div>
+      </div>
+      <h3 style="margin-top:16px">Jugadores más activos</h3>
+      <div id="t-activos"></div>
+    </section>
+
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Reporte 2 · Ventas de la tienda</h2></div>
+      <div class="grid grid-2">
+        <div><h3>Monedas gastadas por día</h3><div id="g-ventas"></div></div>
+        <div><h3>Ventas por artículo</h3><div id="t-items"></div></div>
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Reporte 3 · Economía y publicidad</h2></div>
+      <div class="grid grid-2">
+        <div><h3>Monedas por tipo de movimiento</h3><div id="g-economia"></div></div>
+        <div><h3>Rendimiento de anuncios</h3><div id="g-anuncios"></div></div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/js/paginas/reportes.js"></script>
+</body>
+</html>

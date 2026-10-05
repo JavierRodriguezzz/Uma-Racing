@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ventas · UmaRacing Admin</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="ventas" data-titulo="Ventas de la tienda" data-roles="administrador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <form class="filtros" id="filtros">
+        <div class="campo buscar"><label for="q">Buscar</label><input id="q" name="q" type="search" maxlength="60" placeholder="Folio, usuario o artículo"></div>
+        <div class="campo"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Todos</option><option value="completada">Completadas</option><option value="reembolsada">Reembolsadas</option></select></div>
+        <div class="campo"><label for="tipo">Tipo</label><select id="tipo" name="tipo"><option value="">Todos</option><option value="personaje">Personajes</option><option value="escenario">Escenarios</option></select></div>
+        <div class="campo"><label for="desde">Desde</label><input type="date" id="desde" name="desde"></div>
+        <div class="campo"><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta"></div>
+      </form>
+      <div id="tabla"></div>
+    </section>
+  </main>
+  <script type="module">
+    import { post } from "/js/api.js";
+    import { iniciarPagina } from "/js/layout.js";
+    import { tablaPaginada } from "/js/tabla.js";
+    import { $, $$, conBoton, datosForm, esc, fechaHora, limpiarErrores, modal, mostrarErrores, num, toast } from "/js/ui.js";
+
+    await iniciarPagina();
+    const t = tablaPaginada({
+      contenedor: $("#tabla"), endpoint: "/compras", filtros: $("#filtros"), ordenInicial: "-fecha",
+      columnas: [
+        { titulo: "Folio", orden: "folio", render: (c) => `<code>${esc(c.folio)}</code>` },
+        { titulo: "Fecha", orden: "fecha", render: (c) => fechaHora(c.creada_en) },
+        { titulo: "Usuario", orden: "usuario", render: (c) => esc(c.username) },
+        { titulo: "Artículo", orden: "item", render: (c) => `${esc(c.item)} <span class="texto-3">(${esc(c.tipo)})</span>` },
+        { titulo: "Precio", orden: "precio", clase: "num", render: (c) => num(c.precio_pagado) },
+        { titulo: "Estado", render: (c) => c.estado === "completada" ? '<span class="badge exito">Completada</span>'
+            : `<span class="badge aviso" title="${esc(c.motivo_reembolso || "")}">Reembolsada por ${esc(c.reembolsada_por || "")}</span>` },
+        { titulo: "", clase: "num", render: (c) => (c.estado === "completada" ? `<button class="btn btn-sm btn-peligro" data-reembolsar="${esc(c.folio)}">Reembolsar</button>` : "") },
+      ],
+      alPintar: (res, zona) => {
+        const porFolio = Object.fromEntries(res.datos.map((c) => [c.folio, c]));
+        $$("[data-reembolsar]", zona).forEach((b) => b.addEventListener("click", () => reembolsar(porFolio[b.dataset.reembolsar])));
+      },
+    });
+
+    function reembolsar(c) {
+      const form = document.createElement("form");
+      form.id = "form-reembolso";
+      form.noValidate = true;
+      form.innerHTML = `<p>¿Está seguro de reembolsar la compra <code>${esc(c.folio)}</code>? Se devolverán <strong>${num(c.precio_pagado)} monedas</strong>
+        a <strong>${esc(c.username)}</strong> y perderá <strong>${esc(c.item)}</strong>. Esta operación no se puede deshacer.</p>
+        <div class="campo"><label for="motivo">Motivo del reembolso</label><input id="motivo" name="motivo" required minlength="5" maxlength="255"></div>`;
+      const m = modal({ titulo: "Reembolsar compra", contenido: form, acciones: [
+        { texto: "Cancelar", alHacerClic: (cerrar) => cerrar() },
+        { texto: "Reembolsar", clase: "btn-peligro", submit: true, form: "form-reembolso" }] });
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const d = datosForm(form);
+        limpiarErrores(form);
+        if (d.motivo.length < 5) return mostrarErrores(form, { message: "Escribe el motivo.", detalles: { motivo: "Mínimo 5 caracteres." } });
+        conBoton($("footer .btn-peligro", m.raiz), async () => {
+          try { await post(`/compras/${encodeURIComponent(c.folio)}/reembolso`, d); toast(`Compra ${c.folio} reembolsada.`, "exito"); m.cerrar(); t.recargar(); }
+          catch (er) { mostrarErrores(form, er); }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

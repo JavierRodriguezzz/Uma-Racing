@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tienda · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="tienda" data-titulo="Tienda" data-roles="jugador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <form class="filtros" id="filtros" role="search">
+        <div class="campo buscar"><label for="q">Buscar</label><input id="q" name="q" type="search" placeholder="Nombre o descripción" maxlength="60"></div>
+        <div class="campo"><label for="tipo">Tipo</label>
+          <select id="tipo" name="tipo"><option value="">Todos</option><option value="personaje">Personajes</option><option value="escenario">Escenarios</option></select></div>
+        <div class="campo"><label for="poseido">Disponibilidad</label>
+          <select id="poseido" name="poseido"><option value="">Todos</option><option value="false">Bloqueados</option><option value="true">Ya los tengo</option></select></div>
+        <div class="campo"><label for="orden">Ordenar por</label>
+          <select id="orden" name="orden">
+            <option value="tipo">Tipo</option><option value="precio">Precio: menor a mayor</option><option value="-precio">Precio: mayor a menor</option>
+            <option value="nombre">Nombre A-Z</option><option value="-nombre">Nombre Z-A</option><option value="-ventas">Más vendidos</option>
+          </select></div>
+      </form>
+    </section>
+    <div id="lista"></div>
+    <div class="paginacion" id="paginacion"></div>
+  </main>
+  <script type="module" src="/js/paginas/tienda.js"></script>
+</body>
+</html>

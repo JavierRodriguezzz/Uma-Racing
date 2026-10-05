@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+  <div class="auth">
+    <section class="auth-arte">
+      <h1>¡UmaRacing!</h1>
+      <p>Corre contra tu amigo en el mismo teclado, desbloquea corredoras, gana monedas y escala en el ranking.</p>
+    </section>
+    <section class="auth-form">
+      <div class="tarjeta">
+        <h2 class="pixel" style="font-size:14px">Iniciar sesión</h2>
+        <p class="texto-2">Entra con tu usuario o correo.</p>
+        <div id="mensaje"></div>
+        <form id="form" novalidate>
+          <div class="campo">
+            <label for="usuario">Usuario o correo</label>
+            <input id="usuario" name="usuario" autocomplete="username" required minlength="3" maxlength="120">
+          </div>
+          <div class="campo">
+            <label for="password">Contraseña</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="72">
+          </div>
+          <button class="btn btn-primario" style="width:100%" id="entrar">Entrar</button>
+        </form>
+        <p class="texto-2" style="margin-top:16px">¿No tienes cuenta? <a href="/registro.html">Regístrate gratis</a> y recibe 100 monedas.</p>
+        <div class="demo"><strong>Cuentas de prueba:</strong><br>
+          Admin: <code>admin</code> / <code>Admin123!</code><br>
+          Jugador: <code>jugador1</code> o <code>jugador2</code> / <code>Jugador123!</code></div>
+      </div>
+    </section>
+  </div>
+  <script type="module">
+    import { post, sesion } from "/js/api.js";
+    import { $, conBoton, datosForm, limpiarErrores, mostrarErrores } from "/js/ui.js";
+
+    const params = new URLSearchParams(location.search);
+    const volver = params.get("volver");
+    const destinoSeguro = volver && volver.startsWith("/") && !volver.startsWith("//") ? volver : "/dashboard.html";
+    if (sesion.token() && !params.has("expirada")) location.href = destinoSeguro;
+    if (params.has("expirada")) $("#mensaje").innerHTML = '<div class="alerta advertencia">Tu sesión expiró. Inicia sesión de nuevo.</div>';
+    if (params.has("salida")) $("#mensaje").innerHTML = '<div class="alerta exito">Cerraste sesión correctamente.</div>';
+    if (params.has("registrado")) $("#mensaje").innerHTML = '<div class="alerta exito">¡Cuenta creada! Ya puedes iniciar sesión.</div>';
+
+    $("#form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const datos = datosForm(form);
+      limpiarErrores(form);
+      // Validación básica en el navegador (la definitiva la hace el servidor)
+      const errores = {};
+      if (datos.usuario.length < 3) errores.usuario = "Escribe tu usuario o correo.";
+      if (!datos.password) errores.password = "Escribe tu contraseña.";
+      if (Object.keys(errores).length) return mostrarErrores(form, { message: "Completa los campos obligatorios.", detalles: errores });
+
+      conBoton($("#entrar"), async () => {
+        try {
+          const r = await post("/auth/login", datos);
+          sesion.guardar({ token: r.token, expira_en: r.expira_en, usuario: r.usuario });
+          location.href = destinoSeguro;
+        } catch (err) {
+          mostrarErrores(form, err);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

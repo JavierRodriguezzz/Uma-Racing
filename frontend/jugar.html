@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jugar · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="jugar" data-titulo="Jugar" data-roles="jugador">
+  <main class="contenido pila" id="contenido" hidden>
+    <div class="alerta info" id="aviso">Haz clic dentro del juego cuando diga <em>"Ready to start"</em> para activar el sonido y el teclado.</div>
+    <div class="marco-juego" id="marco">
+      <div class="estado" id="cargando-juego" style="color:#fff;position:absolute;inset:0;display:grid;place-content:center">
+        <div class="icono">🏇</div><h3 style="color:#fff">Preparando la pista…</h3></div>
+    </div>
+    <div class="fila">
+      <button class="btn" id="pantalla-completa">⛶ Pantalla completa</button>
+      <button class="btn" id="reiniciar">↻ Recargar juego</button>
+      <span class="espaciador"></span>
+      <a class="btn btn-oro" href="/tienda.html">Desbloquear corredoras</a>
+    </div>
+    <section class="controles">
+      <div class="tarjeta"><h3 style="color:var(--pasto)">Jugador 1 — tú</h3>
+        <p style="margin:0">Elegir: <kbd>A</kbd> <kbd>D</kbd> · Confirmar: <kbd>W</kbd><br>Correr: alterna <kbd>A</kbd> y <kbd>D</kbd> lo más rápido que puedas.</p>
+        <p class="texto-2" style="margin:6px 0 0;font-size:14px">Tus partidas, monedas y logros se guardan en tu cuenta.</p></div>
+      <div class="tarjeta"><h3 style="color:var(--j2)">Jugador 2 — invitado</h3>
+        <p style="margin:0">Elegir: <kbd>←</kbd> <kbd>→</kbd> · Confirmar: <kbd>↑</kbd><br>Correr: alterna <kbd>←</kbd> y <kbd>→</kbd>.</p>
+        <p class="texto-2" style="margin:6px 0 0;font-size:14px">Puede usar las corredoras gratuitas y las que tú hayas desbloqueado.</p></div>
+      <div class="tarjeta"><h3>Recompensas</h3>
+        <p style="margin:0">Victoria: <strong>20 monedas</strong> · Derrota: <strong>5</strong><br>Puntaje: 500 + bono por rapidez al ganar.</p>
+        <p class="texto-2" style="margin:6px 0 0;font-size:14px">El servidor valida cada resultado; las carreras imposibles se rechazan.</p></div>
+    </section>
+  </main>
+  <script type="module">
+    import { api } from "/js/api.js";
+    import { actualizarMonedas, iniciarPagina } from "/js/layout.js";
+    import { $, celebrarLogros, toast } from "/js/ui.js";
+
+    await iniciarPagina();
+
+    // ---- Puente juego ↔ API. El juego (Python en WebAssembly) solo puede usar estas rutas.
+    const PERMITIDAS = [/^GET \/juego\/config$/, /^POST \/partidas$/, /^POST \/partidas\/[0-9a-f-]{36}\/finalizar$/];
+    window.umaBridge = {
+      resultados: {},
+      pedir(id, metodo, ruta, cuerpoJson) {
+        const firma = `${metodo} ${ruta}`;
+        if (!PERMITIDAS.some((r) => r.test(firma))) {
+          this.resultados[id] = JSON.stringify({ ok: false, mensaje: "Operación no permitida" });
+          return;
+        }
+        api(metodo, ruta, cuerpoJson ? JSON.parse(cuerpoJson) : null)
+          .then((datos) => {
+            this.resultados[id] = JSON.stringify({ ok: true, datos });
+            if (ruta.endsWith("/finalizar")) {
+              actualizarMonedas(datos.saldo);
+              if (datos.monedas_ganadas) toast(`+${datos.monedas_ganadas} monedas · ${datos.puntaje} puntos`, "exito");
+              else if (datos.limite_diario_alcanzado) toast("Alcanzaste el límite diario de partidas con recompensa.", "aviso");
+              celebrarLogros(datos.logros_nuevos);
+            }
+          })
+          .catch((e) => {
+            this.resultados[id] = JSON.stringify({ ok: false, status: e.status, mensaje: e.message });
+            if (ruta.endsWith("/finalizar") || metodo === "POST") toast(e.message, "error");
+          });
+      },
+      resultado(id) {
+        const r = this.resultados[id];
+        if (r === undefined) return "";
+        delete this.resultados[id];
+        return r;
+      },
+    };
+
+    const marco = $("#marco");
+    function cargarJuego() {
+      marco.querySelector("iframe")?.remove();
+      $("#cargando-juego").hidden = false;
+      const f = document.createElement("iframe");
+      f.src = "/juego/index.html";
+      f.title = "UmaRacing";
+      f.allow = "autoplay; fullscreen";
+      f.addEventListener("load", () => {
+        $("#cargando-juego").hidden = true;
+        // La página de pygbag es del mismo origen: se ocultan sus barras de desplazamiento
+        try {
+          const estilo = f.contentDocument.createElement("style");
+          estilo.textContent = "html,body{overflow:hidden!important;margin:0}";
+          f.contentDocument.head.appendChild(estilo);
+        } catch { /* sin acceso */ }
+        f.focus();
+      });
+      marco.appendChild(f);
+    }
+    $("#pantalla-completa").addEventListener("click", () => marco.requestFullscreen?.());
+    $("#reiniciar").addEventListener("click", cargarJuego);
+    cargarJuego();
+  </script>
+</body>
+</html>

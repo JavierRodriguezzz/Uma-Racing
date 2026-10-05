@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logros · UmaRacing Admin</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="admin-logros" data-titulo="Logros" data-roles="administrador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Catálogo de logros</h2><button class="btn btn-primario" id="nuevo">+ Nuevo logro</button></div>
+      <form class="filtros" id="filtros">
+        <div class="campo buscar"><label for="q">Buscar</label><input id="q" name="q" type="search" maxlength="60" placeholder="Nombre o descripción"></div>
+      </form>
+      <div id="tabla"></div>
+    </section>
+    <div class="alerta info">Los logros se otorgan automáticamente en el servidor al registrar partidas, compras o anuncios. No se puede cambiar la meta de un logro que ya obtuvieron jugadores.</div>
+  </main>
+  <script type="module">
+    import { iniciarPagina } from "/js/layout.js";
+    import { crud } from "/js/crud.js";
+    import { $, badgeEstado, esc, num } from "/js/ui.js";
+
+    await iniciarPagina();
+    const CONDICIONES = [["partidas_jugadas", "Partidas jugadas"], ["victorias", "Victorias"], ["anuncios_vistos", "Anuncios vistos"], ["compras", "Compras"], ["puntaje_partida", "Puntaje en una partida"]];
+    const nombreCond = Object.fromEntries(CONDICIONES);
+    const c = crud({
+      contenedor: $("#tabla"), filtros: $("#filtros"), endpoint: "/logros", nombre: "logro", puedeEliminar: true,
+      columnas: [
+        { titulo: "Logro", render: (l) => `<strong>${esc(l.nombre)}</strong><div class="texto-3" style="font-size:12px"><code>${esc(l.codigo)}</code></div>` },
+        { titulo: "Descripción", clase: "envolver", render: (l) => esc(l.descripcion) },
+        { titulo: "Condición", render: (l) => `${esc(nombreCond[l.condicion])} ≥ ${num(l.valor_objetivo)}` },
+        { titulo: "Recompensa", clase: "num", render: (l) => num(l.recompensa_monedas) },
+        { titulo: "Obtenido por", clase: "num", render: (l) => num(l.obtenido_por) },
+        { titulo: "Estado", render: (l) => badgeEstado(l.activo) },
+      ],
+      campos: [
+        { nombre: "codigo", etiqueta: "Código", requerido: true, maxlength: 40 },
+        { nombre: "nombre", etiqueta: "Nombre", requerido: true, maxlength: 60 },
+        { nombre: "condicion", etiqueta: "Condición", tipo: "select", opciones: CONDICIONES, requerido: true },
+        { nombre: "valor_objetivo", etiqueta: "Meta", tipo: "number", min: 1, max: 1000000, requerido: true, defecto: 10 },
+        { nombre: "recompensa_monedas", etiqueta: "Recompensa (monedas)", tipo: "number", min: 0, max: 5000, requerido: true, defecto: 50 },
+        { nombre: "descripcion", etiqueta: "Descripción", tipo: "textarea", requerido: true, maxlength: 255 },
+        { nombre: "activo", etiqueta: "Activo", tipo: "checkbox", defecto: true },
+      ],
+      validar: (d) => (/^[a-z0-9_]{3,40}$/.test(d.codigo) ? {} : { codigo: "Usa minúsculas, números y guion bajo (3 a 40)." }),
+      aCuerpo: (d) => {
+        const { codigo, nombre, descripcion, condicion, valor_objetivo, recompensa_monedas, activo } = d;
+        return { codigo, nombre, descripcion, condicion, valor_objetivo, recompensa_monedas, activo };
+      },
+    });
+    $("#nuevo").addEventListener("click", c.nuevo);
+  </script>
+</body>
+</html>

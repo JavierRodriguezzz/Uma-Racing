@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bitácora · UmaRacing Admin</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="bitacora" data-titulo="Bitácora de operaciones" data-roles="administrador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <form class="filtros" id="filtros">
+        <div class="campo buscar"><label for="q">Buscar</label><input id="q" name="q" type="search" maxlength="60" placeholder="Usuario, registro o valor"></div>
+        <div class="campo"><label for="accion">Operación</label><select id="accion" name="accion"><option value="">Todas</option></select></div>
+        <div class="campo"><label for="entidad">Tabla</label><select id="entidad" name="entidad"><option value="">Todas</option></select></div>
+        <div class="campo"><label for="desde">Desde</label><input type="date" id="desde" name="desde"></div>
+        <div class="campo"><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta"></div>
+      </form>
+      <div id="tabla"></div>
+    </section>
+  </main>
+  <script type="module">
+    import { iniciarPagina } from "/js/layout.js";
+    import { tablaPaginada } from "/js/tabla.js";
+    import { $, ACCIONES, esc, fechaHora } from "/js/ui.js";
+
+    await iniciarPagina();
+    let opcionesListas = false;
+    tablaPaginada({
+      contenedor: $("#tabla"), endpoint: "/bitacora", filtros: $("#filtros"), ordenInicial: "-fecha", limite: 20,
+      columnas: [
+        { titulo: "Fecha", orden: "fecha", render: (b) => fechaHora(b.creado_en) },
+        { titulo: "Usuario", orden: "usuario", render: (b) => esc(b.username || "—") },
+        { titulo: "Operación", orden: "accion", render: (b) => `<span class="badge">${esc(ACCIONES[b.accion] || b.accion)}</span>` },
+        { titulo: "Registro", render: (b) => `${esc(b.entidad)} <code>${esc(b.entidad_id || "")}</code>` },
+        { titulo: "Estado anterior", clase: "envolver", render: (b) => `<span class="texto-2" style="font-size:13px">${esc(b.estado_anterior || "—")}</span>` },
+        { titulo: "Estado nuevo", clase: "envolver", render: (b) => `<span style="font-size:13px">${esc(b.estado_nuevo || "—")}</span>` },
+        { titulo: "IP", render: (b) => `<span class="texto-3">${esc(b.ip || "—")}</span>` },
+      ],
+      alPintar: (res) => {
+        if (opcionesListas) return;
+        opcionesListas = true;
+        $("#accion").insertAdjacentHTML("beforeend", res.acciones.map((a) => `<option value="${esc(a)}">${esc(ACCIONES[a] || a)}</option>`).join(""));
+        $("#entidad").insertAdjacentHTML("beforeend", res.entidades.map((e) => `<option value="${esc(e)}">${esc(e)}</option>`).join(""));
+      },
+    });
+  </script>
+</body>
+</html>

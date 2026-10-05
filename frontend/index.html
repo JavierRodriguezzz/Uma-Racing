@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <script>
+    let destino = "/login.html";
+    try { if (JSON.parse(localStorage.getItem("uma.sesion"))?.token) destino = "/dashboard.html"; } catch {}
+    location.replace(destino);
+  </script>
+</head>
+<body style="background:#f6f3ea"></body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ranking · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="ranking" data-titulo="Ranking">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <form class="filtros" id="filtros" style="margin:0">
+        <div class="campo"><label for="periodo">Periodo</label>
+          <select id="periodo" name="periodo"><option value="semana">Últimos 7 días</option><option value="mes">Últimos 30 días</option><option value="total" selected>Histórico</option></select></div>
+        <div class="campo"><label for="criterio">Clasificar por</label>
+          <select id="criterio" name="criterio"><option value="puntaje">Puntaje total</option><option value="victorias">Victorias</option><option value="mejor_tiempo">Mejor tiempo</option></select></div>
+      </form>
+    </section>
+    <div id="mio"></div>
+    <div id="ranking"></div>
+  </main>
+  <script type="module">
+    import { get } from "/js/api.js";
+    import { iniciarPagina } from "/js/layout.js";
+    import { $, $$, cargando, duracion, error, esc, num, vacio } from "/js/ui.js";
+
+    const usuario = await iniciarPagina();
+    const cont = $("#ranking");
+    const PERSONAJE = { goldship: "Gold Ship", oguricap: "Oguri Cap", elcondorpasa: "El Condor Pasa", junglepocket: "Jungle Pocket" };
+
+    async function cargar() {
+      cargando(cont, 6);
+      try {
+        const r = await get("/ranking", { ...Object.fromEntries(new FormData($("#filtros"))), limit: 50 });
+        $("#mio").innerHTML = r.mi_posicion
+          ? `<div class="alerta exito">Tu posición: <strong>#${r.mi_posicion.posicion}</strong> de ${r.total_jugadores} jugadores · ${num(r.mi_posicion.puntaje_total)} puntos · ${num(r.mi_posicion.victorias)} victorias</div>`
+          : (usuario.rol === "jugador" ? '<div class="alerta info">Aún no apareces en este periodo. ¡Juega una carrera para entrar al ranking!</div>' : "");
+        if (!r.datos.length) return vacio(cont, "Nadie ha corrido en este periodo", "Cambia el periodo para ver más resultados.", "🏁");
+        const valor = (f) => r.criterio === "victorias" ? `${num(f.victorias)} victorias` : r.criterio === "mejor_tiempo" ? duracion(f.mejor_tiempo_ms) : `${num(f.puntaje_total)} pts`;
+        const podio = r.datos.slice(0, 3);
+        cont.innerHTML = `
+          <div class="podio">${[1, 0, 2].filter((i) => podio[i]).map((i) => `
+            <div class="tarjeta lugar lugar-${i + 1}">
+              <div class="medalla">${["🥇", "🥈", "🥉"][i]}</div>
+              <h3 style="margin:6px 0 2px">${esc(podio[i].nombre_mostrar)}</h3>
+              <div class="texto-2" style="font-size:13px">@${esc(podio[i].username)}</div>
+              <div style="font-weight:800;margin-top:4px">${valor(podio[i])}</div></div>`).join("")}</div>
+          <div class="tarjeta"><div class="tabla-envoltura"><table>
+            <thead><tr><th class="num">#</th><th>Jugador</th><th>Favorita</th><th class="num">Partidas</th><th class="num">Victorias</th>
+              <th class="num">% Vict.</th><th class="num">Puntaje total</th><th class="num">Mejor puntaje</th><th class="num">Mejor tiempo</th></tr></thead>
+            <tbody>${r.datos.map((f) => `<tr class="${f.usuario_id === usuario.id ? "yo" : ""}">
+              <td class="num"><strong>${f.posicion}</strong></td><td><strong>${esc(f.nombre_mostrar)}</strong> <span class="texto-3">@${esc(f.username)}</span></td>
+              <td>${esc(PERSONAJE[f.personaje_favorito] || "—")}</td><td class="num">${num(f.partidas)}</td><td class="num">${num(f.victorias)}</td>
+              <td class="num">${f.porcentaje_victorias}%</td><td class="num">${num(f.puntaje_total)}</td><td class="num">${num(f.mejor_puntaje)}</td>
+              <td class="num">${duracion(f.mejor_tiempo_ms)}</td></tr>`).join("")}</tbody></table></div></div>`;
+      } catch (e) { error(cont, e, cargar); }
+    }
+    $$("#filtros select").forEach((s) => s.addEventListener("change", cargar));
+    cargar();
+  </script>
+</body>
+</html>

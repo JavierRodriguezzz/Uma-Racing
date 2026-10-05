@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Usuarios · UmaRacing Admin</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="usuarios" data-titulo="Usuarios" data-roles="administrador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Cuentas</h2><button class="btn btn-primario" id="nuevo">+ Nuevo usuario</button></div>
+      <form class="filtros" id="filtros">
+        <div class="campo buscar"><label for="q">Buscar</label><input id="q" name="q" type="search" maxlength="60" placeholder="Usuario, correo o nombre"></div>
+        <div class="campo"><label for="rol">Rol</label><select id="rol" name="rol"><option value="">Todos</option><option value="jugador">Jugador</option><option value="administrador">Administrador</option></select></div>
+        <div class="campo"><label for="activo">Estado</label><select id="activo" name="activo"><option value="">Todos</option><option value="true">Activos</option><option value="false">Inactivos</option></select></div>
+        <div class="campo" style="flex:0 0 auto"><label class="check" style="margin-top:22px"><input type="checkbox" name="incluir_eliminados" value="true"> Incluir eliminados</label></div>
+      </form>
+      <div id="tabla"></div>
+    </section>
+  </main>
+  <script type="module">
+    import { get, patch } from "/js/api.js";
+    import { iniciarPagina } from "/js/layout.js";
+    import { crud } from "/js/crud.js";
+    import { $, $$, conBoton, datosForm, esc, ETIQUETAS_MOV, fecha, fechaHora, limpiarErrores, modal, mostrarErrores, num, toast } from "/js/ui.js";
+
+    const yo = await iniciarPagina();
+    const c = crud({
+      contenedor: $("#tabla"), filtros: $("#filtros"), endpoint: "/usuarios", nombre: "usuario", ordenInicial: "username",
+      puedeEstado: true, puedeEliminar: true,
+      columnas: [
+        { titulo: "Usuario", orden: "username", render: (u) => `<strong>${esc(u.username)}</strong>${u.id === yo.id ? ' <span class="badge info">Tú</span>' : ""}<div class="texto-3" style="font-size:12px">${esc(u.email)}</div>` },
+        { titulo: "Nombre", render: (u) => esc(u.nombre_mostrar) },
+        { titulo: "Rol", render: (u) => `<span class="badge ${u.rol === "administrador" ? "aviso" : ""}">${esc(u.rol)}</span>` },
+        { titulo: "Monedas", orden: "monedas", clase: "num", render: (u) => num(u.monedas) },
+        { titulo: "Partidas", orden: "partidas", clase: "num", render: (u) => num(u.partidas) },
+        { titulo: "Último acceso", orden: "acceso", render: (u) => fechaHora(u.ultimo_acceso) },
+        { titulo: "Estado", render: (u) => u.eliminado_en ? '<span class="badge peligro">Eliminado</span>' : u.activo ? '<span class="badge exito">Activo</span>' : '<span class="badge aviso">Inactivo</span>' },
+      ],
+      accionesExtra: (u) => `<button class="btn btn-sm" data-ver="${u.id}">Ver</button>${u.rol === "jugador" && !u.eliminado_en ? `<button class="btn btn-sm" data-monedas="${u.id}">Monedas</button>` : ""}`,
+      alPintarExtra: (porId, zona, recargar) => {
+        $$("[data-ver]", zona).forEach((b) => b.addEventListener("click", () => detalle(b.dataset.ver)));
+        $$("[data-monedas]", zona).forEach((b) => b.addEventListener("click", () => ajustar(porId[b.dataset.monedas], recargar)));
+      },
+      campos: [
+        { nombre: "username", etiqueta: "Usuario", requerido: true, maxlength: 30, soloCrear: true },
+        { nombre: "email", etiqueta: "Correo", tipo: "email", requerido: true, maxlength: 120 },
+        { nombre: "nombre_mostrar", etiqueta: "Nombre para mostrar", requerido: true, maxlength: 50 },
+        { nombre: "password", etiqueta: "Contraseña inicial", tipo: "password", requerido: true, maxlength: 72, soloCrear: true, ayuda: "Mínimo 8 caracteres con letras y números." },
+        { nombre: "rol", etiqueta: "Rol", tipo: "select", opciones: [["jugador", "Jugador"], ["administrador", "Administrador"]], requerido: true },
+      ],
+      validar: (d, edicion) => {
+        const e = {};
+        if (!edicion && !/^[A-Za-z0-9_.]{3,30}$/.test(d.username)) e.username = "3 a 30 letras, números, punto o guion bajo.";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) e.email = "Correo inválido.";
+        if (!edicion && (d.password.length < 8 || !/[A-Za-z]/.test(d.password) || !/\d/.test(d.password))) e.password = "Mínimo 8 caracteres con letras y números.";
+        return e;
+      },
+      aCuerpo: (d, edicion) => (edicion ? { email: d.email, nombre_mostrar: d.nombre_mostrar, rol: d.rol } : d),
+    });
+    $("#nuevo").addEventListener("click", c.nuevo);
+
+    async function detalle(id) {
+      try {
+        const u = await get(`/usuarios/${id}`);
+        modal({ titulo: `@${u.username}`, contenido: `
+          <p><strong>${esc(u.nombre_mostrar)}</strong> · ${esc(u.email)} · <span class="badge">${esc(u.rol)}</span></p>
+          <p class="texto-2">Registro: ${fecha(u.creado_en)} · Último acceso: ${fechaHora(u.ultimo_acceso)} · Sesiones activas: ${u.sesiones_activas}</p>
+          <p>Monedas: <strong>${num(u.monedas)}</strong> · Partidas: <strong>${num(u.partidas)}</strong> · Compras: <strong>${num(u.compras)}</strong></p>
+          <h3>Últimos movimientos</h3>
+          ${u.ultimos_movimientos.length ? `<div class="tabla-envoltura"><table><thead><tr><th>Fecha</th><th>Tipo</th><th class="num">Monto</th><th class="num">Saldo</th></tr></thead><tbody>
+            ${u.ultimos_movimientos.map((m) => `<tr><td>${fechaHora(m.creado_en)}</td><td>${esc(ETIQUETAS_MOV[m.tipo] || m.tipo)}</td><td class="num">${m.monto > 0 ? "+" : ""}${num(m.monto)}</td><td class="num">${num(m.saldo_nuevo)}</td></tr>`).join("")}
+          </tbody></table></div>` : '<p class="texto-2">Sin movimientos.</p>'}` });
+      } catch (e) { toast(e.message, "error"); }
+    }
+
+    function ajustar(u, recargar) {
+      const form = document.createElement("form");
+      form.id = "form-ajuste";
+      form.noValidate = true;
+      form.innerHTML = `<p>Saldo actual de <strong>${esc(u.username)}</strong>: ${num(u.monedas)} monedas.</p>
+        <div class="campo"><label for="monto">Monto</label><input id="monto" name="monto" type="number" min="-100000" max="100000" required>
+          <span class="ayuda">Positivo para agregar, negativo para descontar. El saldo no puede quedar negativo.</span></div>
+        <div class="campo"><label for="motivo">Motivo</label><input id="motivo" name="motivo" required minlength="5" maxlength="200"></div>`;
+      const m = modal({ titulo: "Ajustar monedas", contenido: form, acciones: [
+        { texto: "Cancelar", alHacerClic: (cerrar) => cerrar() },
+        { texto: "Aplicar ajuste", clase: "btn-primario", submit: true, form: "form-ajuste" }] });
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const d = datosForm(form);
+        limpiarErrores(form);
+        const err = {};
+        if (!d.monto) err.monto = "Escribe un monto distinto de 0.";
+        if (d.motivo.length < 5) err.motivo = "Explica el motivo (mínimo 5 caracteres).";
+        if (Object.keys(err).length) return mostrarErrores(form, { message: "Revisa los datos.", detalles: err });
+        conBoton($("footer .btn-primario", m.raiz), async () => {
+          try { await patch(`/usuarios/${u.id}/monedas`, d); toast("Ajuste aplicado.", "exito"); m.cerrar(); recargar(); }
+          catch (er) { mostrarErrores(form, er); }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

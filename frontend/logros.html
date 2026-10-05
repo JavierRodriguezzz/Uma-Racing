@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logros · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="logros" data-titulo="Logros" data-roles="jugador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta fila">
+      <div style="flex:1;min-width:220px"><h2 id="resumen" style="margin:0">Logros</h2>
+        <div class="progreso" style="margin-top:8px"><div id="barra" style="width:0"></div></div></div>
+      <form class="filtros" id="filtros" style="margin:0">
+        <div class="campo buscar"><label for="q">Buscar</label><input id="q" name="q" type="search" maxlength="60" placeholder="Nombre del logro"></div>
+        <div class="campo"><label for="obtenido">Mostrar</label>
+          <select id="obtenido" name="obtenido"><option value="">Todos</option><option value="true">Obtenidos</option><option value="false">Pendientes</option></select></div>
+      </form>
+    </section>
+    <div id="lista"></div>
+  </main>
+  <script type="module">
+    import { get } from "/js/api.js";
+    import { iniciarPagina } from "/js/layout.js";
+    import { $, cargando, debounce, error, esc, fecha, num, vacio } from "/js/ui.js";
+
+    await iniciarPagina();
+    const lista = $("#lista");
+    const ICONO = { partidas_jugadas: "🏇", victorias: "🏆", anuncios_vistos: "📺", compras: "🛍️", puntaje_partida: "⚡" };
+
+    async function cargar() {
+      cargando(lista, 5);
+      try {
+        const r = await get("/logros", Object.fromEntries(new FormData($("#filtros"))));
+        $("#resumen").textContent = `${r.obtenidos} de ${r.total} logros obtenidos`;
+        $("#barra").style.width = `${r.total ? (100 * r.obtenidos) / r.total : 0}%`;
+        if (!r.datos.length) return vacio(lista, "Sin resultados", "Ningún logro coincide con el filtro.", "🏅");
+        lista.innerHTML = `<div class="grid grid-2">${r.datos.map((l) => `
+          <article class="tarjeta logro ${l.obtenido ? "obtenido" : ""}">
+            <div class="insignia" aria-hidden="true">${ICONO[l.condicion] || "🏅"}</div>
+            <div style="flex:1;min-width:0">
+              <div class="fila" style="justify-content:space-between"><h3 style="margin:0">${esc(l.nombre)}</h3>
+                ${l.obtenido ? `<span class="badge exito">Obtenido ${fecha(l.obtenido_en)}</span>` : '<span class="badge">Pendiente</span>'}</div>
+              <p class="texto-2" style="margin:4px 0">${esc(l.descripcion)}</p>
+              <div class="progreso" role="progressbar" aria-valuemin="0" aria-valuemax="${l.valor_objetivo}" aria-valuenow="${l.progreso}">
+                <div style="width:${(100 * l.progreso) / l.valor_objetivo}%"></div></div>
+              <div class="fila texto-3" style="justify-content:space-between;font-size:13px;margin-top:4px">
+                <span>${num(l.progreso)} / ${num(l.valor_objetivo)}</span><span>Recompensa: ${num(l.recompensa_monedas)} 🪙 · ${num(l.obtenido_por)} jugadores</span></div>
+            </div>
+          </article>`).join("")}</div>`;
+      } catch (e) { error(lista, e, cargar); }
+    }
+    $("#q").addEventListener("input", debounce(cargar));
+    $("#obtenido").addEventListener("change", cargar);
+    $("#filtros").addEventListener("submit", (e) => { e.preventDefault(); cargar(); });
+    cargar();
+  </script>
+</body>
+</html>

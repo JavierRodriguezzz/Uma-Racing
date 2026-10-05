@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anuncios · UmaRacing Admin</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="admin-anuncios" data-titulo="Anuncios (publicidad simulada)" data-roles="administrador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Campañas</h2><button class="btn btn-primario" id="nuevo">+ Nuevo anuncio</button></div>
+      <form class="filtros" id="filtros">
+        <div class="campo buscar"><label for="q">Buscar</label><input id="q" name="q" type="search" maxlength="60" placeholder="Título o anunciante"></div>
+        <div class="campo"><label for="activo">Estado</label><select id="activo" name="activo"><option value="">Todos</option><option value="true">Activos</option><option value="false">Inactivos</option></select></div>
+      </form>
+      <div id="tabla"></div>
+    </section>
+  </main>
+  <script type="module">
+    import { iniciarPagina } from "/js/layout.js";
+    import { crud } from "/js/crud.js";
+    import { $, badgeEstado, esc, num } from "/js/ui.js";
+
+    await iniciarPagina();
+    const c = crud({
+      contenedor: $("#tabla"), filtros: $("#filtros"), endpoint: "/anuncios", nombre: "anuncio", ordenInicial: "-vistas",
+      puedeEstado: true, puedeEliminar: true,
+      columnas: [
+        { titulo: "Anuncio", orden: "titulo", render: (a) => `<div class="fila" style="flex-wrap:nowrap"><span style="width:14px;height:14px;border-radius:4px;background:${esc(a.color)}"></span>
+            <div><strong>${esc(a.titulo)}</strong><div class="texto-3" style="font-size:12px">${esc(a.anunciante)}</div></div></div>` },
+        { titulo: "Duración", orden: "duracion", clase: "num", render: (a) => `${a.duracion_seg} s` },
+        { titulo: "Recompensa", orden: "recompensa", clase: "num", render: (a) => num(a.recompensa_monedas) },
+        { titulo: "Vistas", orden: "vistas", clase: "num", render: (a) => num(a.vistas) },
+        { titulo: "Estado", render: (a) => badgeEstado(a.activo) },
+      ],
+      campos: [
+        { nombre: "titulo", etiqueta: "Título", requerido: true, maxlength: 80 },
+        { nombre: "anunciante", etiqueta: "Anunciante", requerido: true, maxlength: 80 },
+        { nombre: "duracion_seg", etiqueta: "Duración (segundos)", tipo: "number", min: 5, max: 120, requerido: true, defecto: 10 },
+        { nombre: "recompensa_monedas", etiqueta: "Recompensa (monedas)", tipo: "number", min: 1, max: 500, requerido: true, defecto: 15 },
+        { nombre: "color", etiqueta: "Color", tipo: "color", defecto: "#3b82f6" },
+        { nombre: "descripcion", etiqueta: "Descripción", tipo: "textarea", maxlength: 255 },
+        { nombre: "activo", etiqueta: "Activo", tipo: "checkbox", defecto: true },
+      ],
+    });
+    $("#nuevo").addEventListener("click", c.nuevo);
+  </script>
+</body>
+</html>

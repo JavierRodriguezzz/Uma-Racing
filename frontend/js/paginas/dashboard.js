@@ -1,7 +1,7 @@
 import { get } from "../api.js";
 import { grafica } from "../graficas.js";
 import { iniciarPagina } from "../layout.js";
-import { $, ACCIONES, cargando, diaCorto, duracion, error, esc, fechaHora, num } from "../ui.js";
+import { $, ACCIONES, haceDiasISO, cargando, diaCorto, duracion, error, esc, fechaHora, num } from "../ui.js";
 
 const usuario = await iniciarPagina();
 const panel = $("#panel");
@@ -10,7 +10,7 @@ const panel = $("#panel");
 function ultimos7(filas, campos) {
   const mapa = Object.fromEntries(filas.map((f) => [f.dia, f]));
   const dias = [];
-  for (let i = 6; i >= 0; i--) dias.push(new Date(Date.now() - i * 864e5).toISOString().slice(0, 10));
+  for (let i = 6; i >= 0; i--) dias.push(haceDiasISO(i));
   return { etiquetas: dias.map(diaCorto), valores: campos.map((c) => dias.map((d) => Number(mapa[d]?.[c] || 0))) };
 }
 
@@ -43,6 +43,17 @@ function pintarJugador(d) {
       ${kpi("Mejor puntaje", num(t.mejor_puntaje), "En una sola carrera", "j2")}
       ${kpi("Ranking", t.posicion_ranking ? `#${t.posicion_ranking}` : "—", "Por puntaje total", "oro")}
       ${kpi("Logros", `${t.logros}/${t.logros_total}`, `<a href="/logros.html">Ver logros</a>`, "pasto")}
+    </section>
+    <section class="grid grid-3" aria-label="Atajos">
+      <a class="tarjeta" href="/gacha.html" style="text-decoration:none;color:inherit;border-color:var(--magenta-osc)">
+        <div class="pixel neon-magenta" style="font-size:11px">GACHAPÓN</div><h2 style="margin:6px 0">Prueba tu suerte</h2>
+        <p class="texto-2" style="margin:0">Corredoras épicas al 3 % con garantía cada 30 tiradas.</p></a>
+      <a class="tarjeta" href="/apuestas.html" style="text-decoration:none;color:inherit;border-color:var(--cian-osc)">
+        <div class="pixel neon-cian" style="font-size:11px">APUESTAS</div><h2 style="margin:6px 0">Carrera simulada</h2>
+        <p class="texto-2" style="margin:0">Elige a tu favorita y multiplica tus monedas hasta ×4.</p></a>
+      <a class="tarjeta" href="/monedas.html" style="text-decoration:none;color:inherit;border-color:var(--ficha-osc)">
+        <div class="pixel neon-ficha" style="font-size:11px">MONEDAS</div><h2 style="margin:6px 0">Recarga con Google Pay</h2>
+        <p class="texto-2" style="margin:0">Paquetes desde $19 MXN o gánalas jugando.</p></a>
     </section>
     ${d.articulos_por_desbloquear ? `<div class="alerta info">Tienes ${d.articulos_por_desbloquear} artículo(s) por desbloquear. <a href="/tienda.html">Visita la tienda</a>.</div>` : ""}
     <section class="grid grid-2">
@@ -77,6 +88,8 @@ function pintarAdmin(d) {
       ${kpi("Ventas (30 días)", num(t.ventas_monedas_30d), "Monedas gastadas en tienda", "oro")}
       ${kpi("Anuncios vistos hoy", num(t.anuncios_hoy), "Con recompensa entregada", "j2")}
       ${kpi("Monedas en circulación", num(t.monedas_en_circulacion), "Saldo total de jugadores", "oro")}
+      ${kpi("Ingresos (30 días)", new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(t.ingresos_mxn_30d), "Google Pay · modo TEST", "pasto")}
+      ${kpi("Apuestas hoy", num(t.apuestas_hoy), "Carreras simuladas y retos", "cielo")}
     </section>
     <section class="tarjeta"><div class="tarjeta-titulo"><h2>Alertas</h2></div>
       ${d.alertas.length ? d.alertas.map((a) => `<div class="alerta ${a.nivel === "advertencia" ? "advertencia" : "info"}">${a.nivel === "advertencia" ? "⚠️" : "ℹ️"} ${esc(a.mensaje)}</div>`).join("")

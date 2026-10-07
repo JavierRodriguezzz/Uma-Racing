@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gachapón · UmaRacing Admin</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&family=Silkscreen&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" defer></script>
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="admin-gacha" data-titulo="Gachapón · premios" data-roles="administrador">
+  <main class="contenido pila" id="contenido" hidden>
+    <div class="alerta info">Probabilidad final de cada premio = probabilidad de su rareza (común 75 %, rara 22 %, épica 3 %) × su peso ÷ la suma de pesos de esa rareza.
+      Siempre debe quedar al menos un premio común activo. Las probabilidades se muestran públicamente a los jugadores.</div>
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Premios</h2><button class="btn btn-primario" id="nuevo">+ Nuevo premio</button></div>
+      <div id="tabla"></div>
+    </section>
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Últimas tiradas de los jugadores</h2>
+        <form class="filtros" id="f-hist" style="margin:0"><div class="campo"><label for="h-rareza">Rareza</label>
+          <select id="h-rareza" name="rareza"><option value="">Todas</option><option value="epica">Épica</option><option value="rara">Rara</option><option value="comun">Común</option></select></div></form></div>
+      <div id="tiradas"></div>
+    </section>
+  </main>
+  <script type="module">
+    import { get } from "/js/api.js";
+    import { iniciarPagina } from "/js/layout.js";
+    import { crud } from "/js/crud.js";
+    import { tablaPaginada } from "/js/tabla.js";
+    import { $, badgeEstado, esc, fechaHora, num } from "/js/ui.js";
+
+    await iniciarPagina();
+    const RAREZA = { comun: "Común", rara: "Rara", epica: "Épica" };
+    const items = (await get("/items", { gratuito: false, limit: 100 })).datos;
+    const c = crud({
+      contenedor: $("#tabla"), endpoint: "/gacha/premios", nombre: "premio", puedeEliminar: true,
+      columnas: [
+        { titulo: "Premio", render: (p) => `<strong>${esc(p.nombre)}</strong>` },
+        { titulo: "Rareza", render: (p) => `<span class="badge r-${p.rareza}">${RAREZA[p.rareza]}</span>` },
+        { titulo: "Entrega", render: (p) => (p.tipo === "monedas" ? `${num(p.monedas)} monedas` : `Artículo: ${esc(p.item_codigo)}`) },
+        { titulo: "Peso", clase: "num", render: (p) => num(p.peso) },
+        { titulo: "Probabilidad", clase: "num", render: (p) => (p.activo ? `${(p.probabilidad * 100).toFixed(2)} %` : "—") },
+        { titulo: "Si repite", clase: "num", render: (p) => (p.tipo === "item" ? `+${num(p.monedas_repetido)}` : "—") },
+        { titulo: "Estado", render: (p) => badgeEstado(p.activo) },
+      ],
+      campos: [
+        { nombre: "nombre", etiqueta: "Nombre", requerido: true, maxlength: 60 },
+        { nombre: "rareza", etiqueta: "Rareza", tipo: "select", opciones: [["comun", "Común"], ["rara", "Rara"], ["epica", "Épica"]], requerido: true },
+        { nombre: "tipo", etiqueta: "Entrega", tipo: "select", opciones: [["monedas", "Monedas"], ["item", "Artículo de la tienda"]], requerido: true },
+        { nombre: "item_id", etiqueta: "Artículo (si entrega artículo)", tipo: "select", opciones: [["", "—"], ...items.map((i) => [i.id, `${i.nombre} (${i.tipo})`])] },
+        { nombre: "monedas", etiqueta: "Monedas (si entrega monedas)", tipo: "number", min: 1, max: 100000 },
+        { nombre: "peso", etiqueta: "Peso dentro de su rareza", tipo: "number", min: 1, max: 1000, requerido: true, defecto: 1 },
+        { nombre: "monedas_repetido", etiqueta: "Monedas si ya lo tiene", tipo: "number", min: 0, max: 100000, defecto: 0 },
+        { nombre: "activo", etiqueta: "Activo", tipo: "checkbox", defecto: true },
+      ],
+      validar: (d) => {
+        if (d.tipo === "item" && !d.item_id) return { item_id: "Elige el artículo que entrega." };
+        if (d.tipo === "monedas" && !d.monedas) return { monedas: "Indica cuántas monedas entrega." };
+        return {};
+      },
+      aCuerpo: (d) => ({ nombre: d.nombre, rareza: d.rareza, tipo: d.tipo, peso: d.peso, monedas_repetido: d.monedas_repetido || 0, activo: d.activo,
+        item_id: d.tipo === "item" ? Number(d.item_id) : null, monedas: d.tipo === "monedas" ? d.monedas : null }),
+    });
+    $("#nuevo").addEventListener("click", c.nuevo);
+
+    tablaPaginada({
+      contenedor: $("#tiradas"), endpoint: "/gacha/tiradas", filtros: $("#f-hist"), ordenInicial: "-fecha",
+      columnas: [
+        { titulo: "Folio", render: (t) => `<code>${esc(t.folio)}</code>` },
+        { titulo: "Fecha", orden: "fecha", render: (t) => fechaHora(t.creada_en) },
+        { titulo: "Jugador", render: (t) => esc(t.username) },
+        { titulo: "Premio", render: (t) => esc(t.premio) },
+        { titulo: "Rareza", orden: "rareza", render: (t) => `<span class="badge r-${t.rareza}">${RAREZA[t.rareza]}</span>${t.por_garantia ? ' <span class="badge info">Garantía</span>' : ""}` },
+        { titulo: "Monedas", clase: "num", render: (t) => (t.monedas_otorgadas ? `+${num(t.monedas_otorgadas)}` : "—") },
+      ],
+    });
+  </script>
+</body>
+</html>

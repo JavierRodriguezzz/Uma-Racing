@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paquetes de monedas · UmaRacing Admin</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&family=Silkscreen&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" defer></script>
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="paquetes" data-titulo="Paquetes de monedas" data-roles="administrador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Paquetes a la venta (Google Pay)</h2><button class="btn btn-primario" id="nuevo">+ Nuevo paquete</button></div>
+      <div id="tabla"></div>
+    </section>
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Órdenes de pago</h2></div>
+      <form class="filtros" id="filtros">
+        <div class="campo buscar"><label for="q">Buscar</label><input id="q" name="q" type="search" maxlength="60" placeholder="Folio, usuario o paquete"></div>
+        <div class="campo"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Todos</option><option value="pagada">Pagadas</option><option value="pendiente">Pendientes</option><option value="expirada">Expiradas</option><option value="cancelada">Canceladas</option></select></div>
+        <div class="campo"><label for="desde">Desde</label><input type="date" id="desde" name="desde"></div>
+        <div class="campo"><label for="hasta">Hasta</label><input type="date" id="hasta" name="hasta"></div>
+      </form>
+      <div id="ordenes"></div>
+    </section>
+  </main>
+  <script type="module">
+    import { iniciarPagina } from "/js/layout.js";
+    import { crud } from "/js/crud.js";
+    import { tablaPaginada } from "/js/tabla.js";
+    import { $, badgeEstado, esc, fechaHora, num } from "/js/ui.js";
+
+    await iniciarPagina();
+    const mxn = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" });
+    const c = crud({
+      contenedor: $("#tabla"), endpoint: "/paquetes", nombre: "paquete", puedeEstado: true, puedeEliminar: true,
+      columnas: [
+        { titulo: "Paquete", render: (p) => `<strong>${esc(p.nombre)}</strong>${p.destacado ? ' <span class="badge aviso">Destacado</span>' : ""}` },
+        { titulo: "Monedas", clase: "num", render: (p) => `${num(p.monedas)}${p.bonus ? ` <span class="texto-3">+${num(p.bonus)}</span>` : ""}` },
+        { titulo: "Precio", clase: "num", render: (p) => mxn.format(p.precio_mxn) },
+        { titulo: "Monedas por peso", clase: "num", render: (p) => (p.total / p.precio_mxn).toFixed(1) },
+        { titulo: "Vendidos", clase: "num", render: (p) => num(p.vendidos) },
+        { titulo: "Estado", render: (p) => badgeEstado(p.activo) },
+      ],
+      campos: [
+        { nombre: "nombre", etiqueta: "Nombre", requerido: true, maxlength: 60 },
+        { nombre: "precio_mxn", etiqueta: "Precio (MXN)", tipo: "number", min: 1, max: 10000, requerido: true, defecto: 49 },
+        { nombre: "monedas", etiqueta: "Monedas", tipo: "number", min: 1, max: 1000000, requerido: true, defecto: 500 },
+        { nombre: "bonus", etiqueta: "Monedas de regalo", tipo: "number", min: 0, max: 1000000, defecto: 0 },
+        { nombre: "destacado", etiqueta: "Destacar como mejor valor", tipo: "checkbox" },
+        { nombre: "activo", etiqueta: "Activo (a la venta)", tipo: "checkbox", defecto: true },
+      ],
+      aCuerpo: (d) => ({ nombre: d.nombre, monedas: d.monedas, bonus: d.bonus || 0, precio_mxn: d.precio_mxn, destacado: d.destacado, activo: d.activo }),
+    });
+    $("#nuevo").addEventListener("click", c.nuevo);
+
+    tablaPaginada({
+      contenedor: $("#ordenes"), endpoint: "/pagos/ordenes", filtros: $("#filtros"), ordenInicial: "-fecha",
+      columnas: [
+        { titulo: "Folio", render: (o) => `<code>${esc(o.folio)}</code>` },
+        { titulo: "Fecha", orden: "fecha", render: (o) => fechaHora(o.creada_en) },
+        { titulo: "Usuario", orden: "usuario", render: (o) => esc(o.username) },
+        { titulo: "Paquete", render: (o) => esc(o.paquete) },
+        { titulo: "Monto", orden: "monto", clase: "num", render: (o) => mxn.format(o.monto) },
+        { titulo: "Tarjeta", render: (o) => esc(o.red_tarjeta || "—") },
+        { titulo: "Estado", render: (o) => `<span class="badge ${o.estado === "pagada" ? "exito" : o.estado === "pendiente" ? "aviso" : ""}">${esc(o.estado)}</span> <span class="texto-3" style="font-size:11px">${esc(o.entorno)}</span>` },
+      ],
+    });
+  </script>
+</body>
+</html>

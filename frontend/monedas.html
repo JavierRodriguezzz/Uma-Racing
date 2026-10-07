@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monedas · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&family=Silkscreen&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" defer></script>
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script async src="https://pay.google.com/gp/p/js/pay.js"></script>
+</head>
+<body data-pagina="monedas" data-titulo="Comprar monedas" data-roles="jugador">
+  <main class="contenido pila" id="contenido" hidden>
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Paquetes de monedas</h2><span class="modo-test" id="entorno">GOOGLE PAY · TEST</span></div>
+      <p class="texto-2" style="margin-top:0">Elige un paquete y paga con Google Pay. En modo de prueba <strong>no se realiza ningún cargo</strong>:
+        Google muestra tarjetas de prueba y el servidor acredita las monedas al validar el pago.</p>
+      <div class="grid grid-items" id="paquetes"></div>
+    </section>
+
+    <section class="tarjeta" id="caja" hidden>
+      <div class="tarjeta-titulo"><h2>Caja</h2><span class="badge" id="orden-folio"></span></div>
+      <div class="grid grid-2" style="align-items:center">
+        <div>
+          <div class="texto-2 pixel" style="font-size:11px">PAQUETE</div>
+          <div class="titulo" style="font-size:24px" id="caja-nombre"></div>
+          <div class="neon-ficha titulo" style="font-size:20px" id="caja-monedas"></div>
+          <div style="font-size:1.4rem;font-weight:700" id="caja-precio"></div>
+          <div class="texto-3" style="font-size:13px" id="caja-expira"></div>
+        </div>
+        <div class="pila" style="gap:10px">
+          <div class="gpay" id="gpay"></div>
+          <button class="btn" id="simular" hidden>Simular pago de prueba</button>
+          <p class="texto-3" id="gpay-nota" style="margin:0;font-size:13px"></p>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid grid-2">
+      <section class="tarjeta">
+        <div class="tarjeta-titulo"><h2>Gana monedas jugando</h2><a class="btn btn-sm btn-cian" href="/jugar.html">▶ Jugar</a></div>
+        <p class="texto-2" style="margin-top:0" id="tiempo-reglas">Cada 5 minutos de juego activo te dan monedas.</p>
+        <div class="fila" style="justify-content:space-between"><span class="pixel texto-2" style="font-size:11px">HOY</span><span class="neon-ficha titulo" id="tiempo-hoy">0 / 60</span></div>
+        <div class="progreso"><div id="tiempo-barra" style="width:0"></div></div>
+        <p class="texto-3" style="font-size:13px;margin-bottom:0">Solo cuenta el tiempo en el que presionas teclas dentro del juego. Lo mide el servidor.</p>
+      </section>
+      <section class="tarjeta">
+        <div class="tarjeta-titulo"><h2>Otras formas gratis</h2></div>
+        <div class="pila" style="gap:10px">
+          <a class="btn" href="/anuncios.html">📺 Ver anuncios</a>
+          <a class="btn" href="/logros.html">🏆 Completar logros</a>
+          <a class="btn" href="/jugar.html">🏇 Ganar carreras (+20)</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Mis compras de monedas</h2></div>
+      <div id="historial"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/paginas/monedas.js"></script>
+</body>
+</html>

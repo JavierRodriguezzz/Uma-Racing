@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gachapón · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&family=Silkscreen&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" defer></script>
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="gacha" data-titulo="Gachapón" data-roles="jugador">
+  <main class="contenido pila" id="contenido" hidden>
+    <div class="gacha">
+      <section class="tarjeta" style="text-align:center">
+        <div class="maquina" id="maquina">
+          <svg viewBox="0 0 280 430" role="img" aria-label="Máquina de gachapón">
+            <defs>
+              <radialGradient id="cristal" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#ffffff" stop-opacity=".35"/><stop offset=".6" stop-color="#9fe9ff" stop-opacity=".08"/><stop offset="1" stop-color="#38e8ff" stop-opacity=".18"/></radialGradient>
+              <linearGradient id="cuerpo" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff3ea5"/><stop offset="1" stop-color="#8a1a5a"/></linearGradient>
+            </defs>
+            <!-- domo -->
+            <g id="capsulas-domo">
+              <g transform="translate(78 150)"><circle r="20" fill="#9aa4c7"/><path d="M-20 0a20 20 0 0 1 40 0z" fill="#fff" opacity=".85"/></g>
+              <g transform="translate(122 168)"><circle r="20" fill="#38b6ff"/><path d="M-20 0a20 20 0 0 1 40 0z" fill="#fff" opacity=".85"/></g>
+              <g transform="translate(168 152)"><circle r="20" fill="#9aa4c7"/><path d="M-20 0a20 20 0 0 1 40 0z" fill="#fff" opacity=".85"/></g>
+              <g transform="translate(205 172)"><circle r="20" fill="#ff3ea5"/><path d="M-20 0a20 20 0 0 1 40 0z" fill="#fff" opacity=".85"/></g>
+              <g transform="translate(100 122)"><circle r="20" fill="#ffd23f"/><path d="M-20 0a20 20 0 0 1 40 0z" fill="#fff" opacity=".85"/></g>
+              <g transform="translate(150 112)"><circle r="20" fill="#9aa4c7"/><path d="M-20 0a20 20 0 0 1 40 0z" fill="#fff" opacity=".85"/></g>
+              <g transform="translate(192 128)"><circle r="20" fill="#38b6ff"/><path d="M-20 0a20 20 0 0 1 40 0z" fill="#fff" opacity=".85"/></g>
+              <g transform="translate(140 76)"><circle r="20" fill="#5dffb0"/><path d="M-20 0a20 20 0 0 1 40 0z" fill="#fff" opacity=".85"/></g>
+            </g>
+            <circle cx="140" cy="130" r="110" fill="url(#cristal)" stroke="#38e8ff" stroke-width="4"/>
+            <path d="M70 70 q20 -30 60 -38" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity=".5"/>
+            <!-- cuerpo -->
+            <rect x="40" y="236" width="200" height="170" rx="14" fill="url(#cuerpo)" stroke="#ffb3dd" stroke-width="3"/>
+            <rect x="58" y="252" width="164" height="40" rx="6" fill="#120b2e" stroke="#ff8cc8" stroke-width="2"/>
+            <text x="140" y="279" text-anchor="middle" font-family="Bungee" font-size="20" fill="#ffd23f">GACHA</text>
+            <!-- ranura de ficha -->
+            <rect x="196" y="312" width="10" height="34" rx="3" fill="#120b2e"/>
+            <!-- perilla -->
+            <g class="perilla" id="perilla">
+              <circle cx="140" cy="352" r="30" fill="#ffd23f" stroke="#7a5a00" stroke-width="3"/>
+              <rect x="134" y="326" width="12" height="52" rx="5" fill="#fff5c2" stroke="#7a5a00" stroke-width="2"/>
+            </g>
+            <!-- salida -->
+            <rect x="66" y="330" width="44" height="40" rx="6" fill="#120b2e" stroke="#ff8cc8" stroke-width="2"/>
+            <!-- cápsula que sale -->
+            <g id="capsula" opacity="0" transform="translate(88 300)">
+              <g id="tapa"><path d="M-17 0a17 17 0 0 1 34 0z" fill="#fff"/></g>
+              <g id="base"><path d="M-17 0a17 17 0 0 0 34 0z" id="color-capsula" fill="#ff3ea5"/></g>
+            </g>
+          </svg>
+        </div>
+        <div class="maquina-sombra"></div>
+        <div class="fila" style="justify-content:center;margin-top:14px">
+          <button class="btn btn-oro btn-grande" id="tirar1">×1 · <span id="costo1">100</span></button>
+          <button class="btn btn-primario btn-grande" id="tirar10">×10 · <span id="costo10">900</span></button>
+        </div>
+        <div style="margin-top:18px;text-align:left">
+          <div class="fila" style="justify-content:space-between"><span class="pixel texto-2" style="font-size:10px">GARANTÍA ÉPICA</span>
+            <span class="pixel neon-magenta" style="font-size:11px" id="pity-txt">0 / 30</span></div>
+          <div class="medidor" id="medidor" style="margin-top:6px"></div>
+          <p class="texto-3" style="font-size:12px;margin:6px 0 0">Si llegas a 30 tiradas seguidas sin épica, la siguiente es épica segura.</p>
+        </div>
+      </section>
+
+      <div class="pila">
+        <section class="tarjeta">
+          <div class="tarjeta-titulo"><h2>Resultado</h2><span class="badge" id="folio">—</span></div>
+          <div class="revelado" id="revelado"><div class="estado"><div class="icono">🎰</div><h3>Inserta una ficha</h3><p>Tira para ver qué te toca.</p></div></div>
+        </section>
+        <section class="tarjeta">
+          <div class="tarjeta-titulo"><h2>Premios y probabilidades</h2></div>
+          <div id="probabilidades"></div>
+          <p class="texto-3" style="font-size:12px;margin-bottom:0">Si te sale un artículo que ya tienes, recibes las monedas indicadas como compensación. Monedas virtuales sin valor monetario.</p>
+        </section>
+      </div>
+    </div>
+
+    <section class="tarjeta">
+      <div class="tarjeta-titulo"><h2>Mis tiradas</h2>
+        <form class="filtros" id="f-hist" style="margin:0"><div class="campo"><label for="h-rareza">Rareza</label>
+          <select id="h-rareza" name="rareza"><option value="">Todas</option><option value="epica">Épica</option><option value="rara">Rara</option><option value="comun">Común</option></select></div></form></div>
+      <div id="t-hist"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/paginas/gacha.js"></script>
+</body>
+</html>

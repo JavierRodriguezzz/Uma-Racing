@@ -29,7 +29,9 @@ async function cargar() {
   }
   ["#g-partidas", "#g-personajes", "#t-activos", "#g-ventas", "#t-items", "#g-economia", "#g-anuncios"].forEach((s) => cargando($(s), 4));
   try {
-    const [p, v, e] = await Promise.all([get("/reportes/partidas", rango), get("/reportes/ventas", rango), get("/reportes/economia", rango)]);
+    const [p, v, e, m] = await Promise.all([get("/reportes/partidas", rango), get("/reportes/ventas", rango),
+      get("/reportes/economia", rango), get("/reportes/monetizacion", rango)]);
+    pintarMonetizacion(m);
     ultimo = { rango, p, v, e };
     const finalizadas = p.por_dia.reduce((a, d) => a + Number(d.finalizadas), 0);
     const invalidas = p.por_dia.reduce((a, d) => a + Number(d.invalidas), 0);
@@ -59,6 +61,23 @@ async function cargar() {
     error($("#g-partidas"), err, cargar);
     toast(err.message, "error");
   }
+}
+
+const mxn = new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" });
+const RAREZA = { comun: "Común", rara: "Rara", epica: "Épica" };
+function pintarMonetizacion(m) {
+  const a = m.apuestas;
+  $("#kpis-mon").innerHTML =
+    kpi("Ingresos", mxn.format(m.totales.ingresos_mxn), `${num(m.totales.ordenes)} órdenes pagadas`, "oro") +
+    kpi("Apostado", num(a.apostado), `${num(a.apuestas)} apuestas · ${num(a.ganadas)} ganadas`, "j2") +
+    kpi("Margen de la casa", num(a.margen), `Pagado a jugadores: ${num(a.pagado)}`, "cielo") +
+    kpi("Tiradas gachapón", num(m.gacha.tiradas), `${num(m.gacha.gastado)} monedas gastadas`, "pasto");
+  grafica($("#g-ingresos"), { tipo: "barra", titulo: "Ingresos por día", etiquetas: m.ingresos_por_dia.map((d) => diaCorto(d.dia)),
+    series: [{ nombre: "MXN", datos: m.ingresos_por_dia.map((d) => d.monto) }], formato: (n) => mxn.format(n) });
+  grafica($("#g-rarezas"), { tipo: "barra-h", titulo: "Rarezas obtenidas", etiquetas: m.gacha.rarezas.map((r) => RAREZA[r.rareza]),
+    series: [{ nombre: "Premios", datos: m.gacha.rarezas.map((r) => r.cantidad) }, { nombre: "Por garantía", datos: m.gacha.rarezas.map((r) => r.por_garantia) }] });
+  $("#t-paquetes").innerHTML = tabla(m.por_paquete, [
+    ["Paquete", (f) => esc(f.paquete)], ["Órdenes", (f) => num(f.ordenes), "num"], ["Monedas entregadas", (f) => num(f.monedas), "num"], ["Ingresos", (f) => mxn.format(f.monto), "num"]]);
 }
 
 function exportarCSV() {

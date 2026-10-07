@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apuestas · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&family=Silkscreen&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" defer></script>
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body data-pagina="apuestas" data-titulo="Apuestas" data-roles="jugador">
+  <main class="contenido pila" id="contenido" hidden>
+    <div class="alerta info" id="responsable">Juego responsable: apuestas de monedas virtuales sin valor monetario.</div>
+
+    <div class="pestanas" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="carrera">🏁 Carrera simulada</button>
+      <button role="tab" aria-selected="false" data-tab="tiempo">⏱ Reto de tiempo</button>
+      <button role="tab" aria-selected="false" data-tab="historial">📜 Historial</button>
+    </div>
+
+    <!-- Carrera simulada -->
+    <section data-panel="carrera" class="pila">
+      <section class="tarjeta">
+        <div class="tarjeta-titulo"><h2>Elige a tu corredora</h2><span class="texto-3" style="font-size:13px">El servidor simula la carrera; los momios salen de 4,000 simulaciones.</span></div>
+        <div class="corredoras" id="corredoras"></div>
+      </section>
+      <section class="tarjeta">
+        <div class="grid grid-2" style="align-items:end">
+          <div>
+            <div class="campo" style="margin:0"><label for="monto">Monto a apostar</label>
+              <input id="monto" type="number" min="10" max="500" step="10" value="50"></div>
+            <div class="fila" style="margin-top:8px" id="fichas"></div>
+          </div>
+          <div class="fila" style="justify-content:flex-end">
+            <div style="text-align:right"><div class="pixel texto-2" style="font-size:10px">PAGO SI GANA</div>
+              <div class="titulo neon-ficha" style="font-size:26px" id="pago-posible">—</div></div>
+            <button class="btn btn-primario btn-grande" id="apostar" disabled>¡Apostar!</button>
+          </div>
+        </div>
+      </section>
+      <section class="tarjeta">
+        <div class="tarjeta-titulo"><h2>Pista</h2><span class="badge" id="folio-carrera">Esperando apuesta</span></div>
+        <div class="pista" id="pista"><div class="meta-linea"></div></div>
+      </section>
+    </section>
+
+    <!-- Reto de tiempo -->
+    <section data-panel="tiempo" class="pila" hidden>
+      <section class="tarjeta" id="reto"></section>
+    </section>
+
+    <!-- Historial -->
+    <section data-panel="historial" class="tarjeta" hidden>
+      <form class="filtros" id="f-hist">
+        <div class="campo"><label for="h-tipo">Tipo</label><select id="h-tipo" name="tipo"><option value="">Todas</option><option value="carrera">Carrera simulada</option><option value="tiempo">Reto de tiempo</option></select></div>
+        <div class="campo"><label for="h-estado">Estado</label><select id="h-estado" name="estado"><option value="">Todos</option><option value="ganada">Ganadas</option><option value="perdida">Perdidas</option><option value="pendiente">Pendientes</option><option value="cancelada">Canceladas</option></select></div>
+        <div class="campo"><label for="h-desde">Desde</label><input type="date" id="h-desde" name="desde"></div>
+        <div class="campo"><label for="h-hasta">Hasta</label><input type="date" id="h-hasta" name="hasta"></div>
+      </form>
+      <div id="t-hist"></div>
+    </section>
+  </main>
+  <script type="module" src="/js/paginas/apuestas.js"></script>
+</body>
+</html>

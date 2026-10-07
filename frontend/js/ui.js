@@ -16,10 +16,14 @@ export const fechaHora = (v) => (v ? new Date(v).toLocaleString("es-MX", { day: 
 export const diaCorto = (v) => new Date(v + "T00:00:00").toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
 export const duracion = (ms) => (ms == null ? "—" : `${(ms / 1000).toFixed(2)} s`);
 export const monedas = (n) => `${num(n)} 🪙`;
-export const hoyISO = () => new Date().toISOString().slice(0, 10);
-export const haceDiasISO = (d) => new Date(Date.now() - d * 864e5).toISOString().slice(0, 10);
+// Fecha local AAAA-MM-DD (toISOString usaría UTC y en la noche de México ya sería "mañana")
+const isoLocal = (f) => `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, "0")}-${String(f.getDate()).padStart(2, "0")}`;
+export const hoyISO = () => isoLocal(new Date());
+export const haceDiasISO = (d) => isoLocal(new Date(Date.now() - d * 864e5));
 
-export const ETIQUETAS_MOV = { registro: "Bono de registro", compra: "Compra", reembolso: "Reembolso", anuncio: "Anuncio", partida: "Partida", logro: "Logro", ajuste: "Ajuste admin" };
+export const ETIQUETAS_MOV = { registro: "Bono de registro", compra: "Compra", reembolso: "Reembolso", anuncio: "Anuncio", partida: "Partida",
+  logro: "Logro", ajuste: "Ajuste admin", compra_monedas: "Google Pay", tiempo_juego: "Tiempo de juego", apuesta: "Apuesta",
+  premio_apuesta: "Premio apuesta", gacha: "Gachapón", premio_gacha: "Premio gachapón" };
 
 // ---------------------------------------------------------------- Estados
 export function cargando(el, lineas = 4) {
@@ -188,4 +192,4 @@ export function celebrarLogros(logros = []) {
 export const ACCIONES = { login: "Inicio de sesión", logout: "Cierre de sesión", registro: "Registro", compra: "Compra", reembolso: "Reembolso",
   recompensa_anuncio: "Anuncio visto", logro_obtenido: "Logro obtenido", crear: "Creación", actualizar: "Actualización",
   eliminar: "Baja", cambiar_estado: "Cambio de estado", ajuste_monedas: "Ajuste de monedas", partida_invalida: "Partida rechazada",
-  equipar_escenario: "Escenario equipado", actualizar_perfil: "Perfil actualizado", cambiar_password: "Cambio de contraseña" };
+  equipar_escenario: "Escenario equipado", pago_confirmado: "Pago Google Pay", apuesta: "Apuesta", cancelar_apuesta: "Apuesta cancelada", tirada_gacha: "Tirada de gachapón", actualizar_perfil: "Perfil actualizado", cambiar_password: "Cambio de contraseña" };

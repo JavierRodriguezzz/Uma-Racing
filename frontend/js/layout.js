@@ -1,7 +1,8 @@
 // Estructura común: barra lateral según el rol, barra superior con monedas y cierre de sesión.
 // Cada página declara en <body>: data-pagina, data-titulo y data-roles ("jugador", "administrador" o ambos).
 import { get, post, sesion } from "./api.js";
-import { $, confirmar, esc, num, toast } from "./ui.js";
+import { contar, entrada, listo } from "./fx.js";
+import { $, $$, confirmar, esc, num, toast } from "./ui.js";
 
 const I = {
   inicio: '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
@@ -19,13 +20,18 @@ const I = {
   bitacora: '<path d="M6 3h11l3 3v15H6zM9 9h8M9 13h8M9 17h5"/>',
   salir: '<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l5-5-5-5M15 12H3"/>',
   menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+  moneda: '<circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.5h3.75a1.75 1.75 0 0 1 0 3.5h-2.5a1.75 1.75 0 0 0 0 3.5H14.5"/>',
+  apuesta: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="16" cy="16" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>',
+  gacha: '<circle cx="12" cy="9" r="6"/><path d="M6 9h12M7 15l-1 6h12l-1-6M10 18h4"/>',
 };
 export const icono = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
 
 const NAV = {
   jugador: [
     ["Mi juego", [["dashboard", "Inicio", "/dashboard.html", "inicio"], ["jugar", "Jugar", "/jugar.html", "jugar"],
-      ["tienda", "Tienda", "/tienda.html", "tienda"], ["anuncios", "Ganar monedas", "/anuncios.html", "anuncio"]]],
+      ["tienda", "Tienda", "/tienda.html", "tienda"]]],
+    ["Monedas", [["monedas", "Comprar monedas", "/monedas.html", "moneda"], ["anuncios", "Ver anuncios", "/anuncios.html", "anuncio"],
+      ["apuestas", "Apuestas", "/apuestas.html", "apuesta", true], ["gacha", "Gachapón", "/gacha.html", "gacha", true]]],
     ["Competencia", [["ranking", "Ranking", "/ranking.html", "ranking"], ["logros", "Logros", "/logros.html", "logro"],
       ["historial", "Historial", "/historial.html", "historial"]]],
     ["Cuenta", [["perfil", "Perfil", "/perfil.html", "perfil"]]],
@@ -35,7 +41,8 @@ const NAV = {
       ["ranking", "Ranking", "/ranking.html", "ranking"]]],
     ["Administración", [["usuarios", "Usuarios", "/admin/usuarios.html", "usuarios"], ["items", "Artículos", "/admin/items.html", "items"],
       ["admin-anuncios", "Anuncios", "/admin/anuncios.html", "anuncio"], ["admin-logros", "Logros", "/admin/logros.html", "logro"],
-      ["ventas", "Ventas", "/admin/ventas.html", "ventas"], ["bitacora", "Bitácora", "/admin/bitacora.html", "bitacora"]]],
+      ["ventas", "Ventas", "/admin/ventas.html", "ventas"], ["paquetes", "Paquetes de monedas", "/admin/paquetes.html", "moneda"],
+      ["admin-gacha", "Gachapón", "/admin/gacha.html", "gacha"], ["bitacora", "Bitácora", "/admin/bitacora.html", "bitacora"]]],
     ["Cuenta", [["perfil", "Perfil", "/perfil.html", "perfil"]]],
   ],
 };
@@ -43,8 +50,7 @@ const NAV = {
 let usuarioActual = null;
 
 export function actualizarMonedas(n) {
-  const el = $("#saldo");
-  if (el) el.textContent = num(n);
+  contar($("#saldo"), Number(n));
   if (usuarioActual) usuarioActual.monedas = n;
 }
 
@@ -83,9 +89,12 @@ function montar(usuario) {
   app.className = "app";
   app.innerHTML = `
     <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
-      <a class="logo" href="/dashboard.html"><img src="/img/logo.png" alt=""><span>UmaRacing<small>${usuario.rol === "administrador" ? "Administración" : "Online"}</small></span></a>
-      <nav class="nav">${grupos.map(([g, links]) => `<div class="nav-grupo">${g}</div>` + links.map(([id, txt, href, ic]) =>
-        `<a href="${href}" class="${id === pagina ? "activo" : ""}" ${id === pagina ? 'aria-current="page"' : ""}>${icono(ic)}${txt}</a>`).join("")).join("")}
+      <div class="marquesina">
+        <a class="logo" href="/dashboard.html"><img src="/img/logo.png" alt=""><span>UMA<br>RACING<small>${usuario.rol === "administrador" ? "ADMIN MODE" : "ONLINE"}</small></span></a>
+        <div class="focos" aria-hidden="true">${"<i></i>".repeat(11)}</div>
+      </div>
+      <nav class="nav">${grupos.map(([g, links]) => `<div class="nav-grupo">${g}</div>` + links.map(([id, txt, href, ic, nuevo]) =>
+        `<a href="${href}" class="${id === pagina ? "activo" : ""}" ${id === pagina ? 'aria-current="page"' : ""}>${icono(ic)}${txt}${nuevo ? '<span class="nuevo">NEW</span>' : ""}</a>`).join("")).join("")}
         <div class="nav-grupo"></div><a href="#" id="salir">${icono("salir")}Cerrar sesión</a>
       </nav>
     </aside>
@@ -93,7 +102,7 @@ function montar(usuario) {
       <header class="topbar">
         <button class="btn btn-texto btn-icono btn-menu" id="btn-menu" aria-label="Abrir menú" aria-controls="sidebar">${icono("menu")}</button>
         <h1>${esc(titulo)}</h1>
-        ${usuario.rol === "jugador" ? `<a class="monedas" href="/historial.html#movimientos" title="Mis monedas"><span id="saldo">${num(usuario.monedas)}</span></a>` : ""}
+        ${usuario.rol === "jugador" ? `<a class="monedas" href="/monedas.html" title="Mis monedas · comprar más"><span id="saldo" data-valor="${usuario.monedas}">${num(usuario.monedas)}</span></a>` : ""}
         <div class="usuario-menu"><span class="nombre texto-2">${esc(usuario.nombre_mostrar || usuario.username)}</span>
           <a class="avatar" href="/perfil.html" title="Mi perfil">${esc((usuario.nombre_mostrar || usuario.username)[0].toUpperCase())}</a></div>
       </header>
@@ -101,6 +110,8 @@ function montar(usuario) {
   document.body.prepend(app);
   $(".principal", app).appendChild(contenido);
   contenido.hidden = false;
+  // Entrada escalonada de los paneles de la página (los que se pintan después usan entrada() por su cuenta)
+  listo().then(() => entrada($$(":scope > *", contenido)));
 
   const sidebar = $("#sidebar");
   $("#btn-menu").addEventListener("click", (e) => { e.stopPropagation(); sidebar.classList.toggle("abierta"); });

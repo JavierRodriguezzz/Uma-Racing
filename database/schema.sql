@@ -9,6 +9,14 @@ CREATE DATABASE IF NOT EXISTS uma_racing
 USE uma_racing;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS gacha_resultados;
+DROP TABLE IF EXISTS gacha_tiradas;
+DROP TABLE IF EXISTS gacha_premios;
+DROP TABLE IF EXISTS apuestas;
+DROP TABLE IF EXISTS atributos_carrera;
+DROP TABLE IF EXISTS sesiones_juego;
+DROP TABLE IF EXISTS ordenes_pago;
+DROP TABLE IF EXISTS paquetes_monedas;
 DROP TABLE IF EXISTS bitacora;
 DROP TABLE IF EXISTS usuario_logros;
 DROP TABLE IF EXISTS logros;
@@ -123,6 +131,7 @@ CREATE TABLE perfiles (
     monedas               INT UNSIGNED NOT NULL DEFAULT 0,
     personaje_favorito_id INT UNSIGNED NULL,
     escenario_equipado_id INT UNSIGNED NULL,
+    tiradas_sin_epica     SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     PRIMARY KEY (usuario_id),
     CONSTRAINT fk_perfiles_usuario   FOREIGN KEY (usuario_id)            REFERENCES usuarios (id),
     CONSTRAINT fk_perfiles_favorito  FOREIGN KEY (personaje_favorito_id) REFERENCES items (id),
@@ -161,7 +170,7 @@ CREATE TABLE inventario_usuario (
     usuario_id   INT UNSIGNED NOT NULL,
     item_id      INT UNSIGNED NOT NULL,
     compra_id    INT UNSIGNED NULL,
-    origen       ENUM('compra', 'regalo', 'logro') NOT NULL DEFAULT 'compra',
+    origen       ENUM('compra', 'regalo', 'logro', 'gacha') NOT NULL DEFAULT 'compra',
     adquirido_en DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT uq_inventario UNIQUE (usuario_id, item_id),
@@ -176,7 +185,8 @@ CREATE TABLE inventario_usuario (
 CREATE TABLE movimientos_monedas (
     id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     usuario_id     INT UNSIGNED    NOT NULL,
-    tipo           ENUM('registro', 'compra', 'reembolso', 'anuncio', 'partida', 'logro', 'ajuste') NOT NULL,
+    tipo           ENUM('registro', 'compra', 'reembolso', 'anuncio', 'partida', 'logro', 'ajuste',
+                        'compra_monedas', 'tiempo_juego', 'apuesta', 'premio_apuesta', 'gacha', 'premio_gacha') NOT NULL,
     monto          INT             NOT NULL,
     saldo_anterior INT UNSIGNED    NOT NULL,
     saldo_nuevo    INT UNSIGNED    NOT NULL,
@@ -311,6 +321,168 @@ CREATE TABLE bitacora (
     CONSTRAINT fk_bitacora_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
     INDEX ix_bitacora_fecha (creado_en),
     INDEX ix_bitacora_entidad (entidad, entidad_id)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 16. PAQUETES DE MONEDAS (se compran con Google Pay)
+-- ---------------------------------------------------------------------
+CREATE TABLE paquetes_monedas (
+    id             INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    nombre         VARCHAR(60)   NOT NULL,
+    monedas        INT UNSIGNED  NOT NULL,
+    bonus          INT UNSIGNED  NOT NULL DEFAULT 0,
+    precio_mxn     DECIMAL(8, 2) NOT NULL,
+    destacado      TINYINT(1)    NOT NULL DEFAULT 0,
+    activo         TINYINT(1)    NOT NULL DEFAULT 1,
+    creado_en      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT ck_paquetes_monedas CHECK (monedas BETWEEN 1 AND 1000000),
+    CONSTRAINT ck_paquetes_precio  CHECK (precio_mxn > 0 AND precio_mxn <= 10000)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 17. ÓRDENES DE PAGO (el servidor fija el precio; el cliente solo confirma)
+-- ---------------------------------------------------------------------
+CREATE TABLE ordenes_pago (
+    id              INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    folio           VARCHAR(24)   NOT NULL,
+    usuario_id      INT UNSIGNED  NOT NULL,
+    paquete_id      INT UNSIGNED  NOT NULL,
+    monedas         INT UNSIGNED  NOT NULL,
+    monto           DECIMAL(8, 2) NOT NULL,
+    moneda          CHAR(3)       NOT NULL DEFAULT 'MXN',
+    proveedor       VARCHAR(20)   NOT NULL DEFAULT 'google_pay',
+    entorno         ENUM('TEST', 'PRODUCTION') NOT NULL DEFAULT 'TEST',
+    estado          ENUM('pendiente', 'pagada', 'cancelada', 'expirada') NOT NULL DEFAULT 'pendiente',
+    referencia_pago CHAR(64)      NULL,
+    red_tarjeta     VARCHAR(20)   NULL,
+    creada_en       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expira_en       DATETIME      NOT NULL,
+    pagada_en       DATETIME      NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT uq_ordenes_folio UNIQUE (folio),
+    CONSTRAINT fk_ordenes_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+    CONSTRAINT fk_ordenes_paquete FOREIGN KEY (paquete_id) REFERENCES paquetes_monedas (id),
+    INDEX ix_ordenes_usuario (usuario_id, creada_en),
+    INDEX ix_ordenes_fecha (estado, pagada_en)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 18. SESIONES DE JUEGO (tiempo de juego activo, medido por latidos)
+-- ---------------------------------------------------------------------
+CREATE TABLE sesiones_juego (
+    id                 INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    usuario_id         INT UNSIGNED NOT NULL,
+    token              CHAR(36)     NOT NULL,
+    estado             ENUM('activa', 'cerrada') NOT NULL DEFAULT 'activa',
+    iniciada_en        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ultimo_latido      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    segundos_activos   INT UNSIGNED NOT NULL DEFAULT 0,
+    segundos_sin_pagar INT UNSIGNED NOT NULL DEFAULT 0,
+    monedas_otorgadas  INT UNSIGNED NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    CONSTRAINT uq_sesiones_juego_token UNIQUE (token),
+    CONSTRAINT fk_sesiones_juego_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+    INDEX ix_sesiones_juego_usuario (usuario_id, iniciada_en)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 19. ATRIBUTOS DE CARRERA (para las carreras simuladas de apuestas)
+-- ---------------------------------------------------------------------
+CREATE TABLE atributos_carrera (
+    item_id     INT UNSIGNED     NOT NULL,
+    velocidad   TINYINT UNSIGNED NOT NULL,
+    resistencia TINYINT UNSIGNED NOT NULL,
+    arranque    TINYINT UNSIGNED NOT NULL,
+    PRIMARY KEY (item_id),
+    CONSTRAINT fk_atributos_item FOREIGN KEY (item_id) REFERENCES items (id),
+    CONSTRAINT ck_atributos CHECK (velocidad BETWEEN 1 AND 100 AND resistencia BETWEEN 1 AND 100 AND arranque BETWEEN 1 AND 100)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 20. APUESTAS (carrera simulada por el servidor o reto de tiempo propio)
+-- ---------------------------------------------------------------------
+CREATE TABLE apuestas (
+    id           INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    folio        VARCHAR(24)   NOT NULL,
+    usuario_id   INT UNSIGNED  NOT NULL,
+    tipo         ENUM('carrera', 'tiempo') NOT NULL,
+    monto        INT UNSIGNED  NOT NULL,
+    item_id      INT UNSIGNED  NULL,
+    objetivo_ms  INT UNSIGNED  NULL,
+    momio        DECIMAL(5, 2) NOT NULL,
+    estado       ENUM('pendiente', 'ganada', 'perdida', 'cancelada') NOT NULL DEFAULT 'pendiente',
+    pago         INT UNSIGNED  NOT NULL DEFAULT 0,
+    partida_id   INT UNSIGNED  NULL,
+    ganador_id   INT UNSIGNED  NULL,
+    resultado    VARCHAR(255)  NULL,
+    creada_en    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    resuelta_en  DATETIME      NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT uq_apuestas_folio UNIQUE (folio),
+    CONSTRAINT fk_apuestas_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+    CONSTRAINT fk_apuestas_item    FOREIGN KEY (item_id)    REFERENCES items (id),
+    CONSTRAINT fk_apuestas_ganador FOREIGN KEY (ganador_id) REFERENCES items (id),
+    CONSTRAINT fk_apuestas_partida FOREIGN KEY (partida_id) REFERENCES partidas (id),
+    CONSTRAINT ck_apuestas_monto CHECK (monto BETWEEN 1 AND 100000),
+    CONSTRAINT ck_apuestas_momio CHECK (momio >= 1.01),
+    CONSTRAINT ck_apuestas_tipo  CHECK ((tipo = 'carrera' AND item_id IS NOT NULL) OR (tipo = 'tiempo' AND objetivo_ms IS NOT NULL)),
+    INDEX ix_apuestas_usuario (usuario_id, creada_en),
+    INDEX ix_apuestas_fecha (creada_en)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 21. PREMIOS DEL GACHAPÓN (probabilidades configurables y públicas)
+-- ---------------------------------------------------------------------
+CREATE TABLE gacha_premios (
+    id               INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    nombre           VARCHAR(60)       NOT NULL,
+    rareza           ENUM('comun', 'rara', 'epica') NOT NULL,
+    tipo             ENUM('item', 'monedas') NOT NULL,
+    item_id          INT UNSIGNED      NULL,
+    monedas          INT UNSIGNED      NULL,
+    peso             SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+    monedas_repetido INT UNSIGNED      NOT NULL DEFAULT 0,
+    activo           TINYINT(1)        NOT NULL DEFAULT 1,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_gacha_premios_item FOREIGN KEY (item_id) REFERENCES items (id),
+    CONSTRAINT ck_gacha_premios_tipo CHECK ((tipo = 'item' AND item_id IS NOT NULL) OR (tipo = 'monedas' AND monedas > 0)),
+    CONSTRAINT ck_gacha_premios_peso CHECK (peso BETWEEN 1 AND 1000)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 22. TIRADAS DEL GACHAPÓN
+-- ---------------------------------------------------------------------
+CREATE TABLE gacha_tiradas (
+    id         INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    folio      VARCHAR(24)      NOT NULL,
+    usuario_id INT UNSIGNED     NOT NULL,
+    cantidad   TINYINT UNSIGNED NOT NULL,
+    costo      INT UNSIGNED     NOT NULL,
+    creada_en  DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT uq_gacha_tiradas_folio UNIQUE (folio),
+    CONSTRAINT fk_gacha_tiradas_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+    CONSTRAINT ck_gacha_tiradas_cantidad CHECK (cantidad IN (1, 10)),
+    INDEX ix_gacha_tiradas_fecha (creada_en)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 23. RESULTADOS DE CADA TIRADA
+-- ---------------------------------------------------------------------
+CREATE TABLE gacha_resultados (
+    id                INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    tirada_id         INT UNSIGNED NOT NULL,
+    premio_id         INT UNSIGNED NOT NULL,
+    rareza            ENUM('comun', 'rara', 'epica') NOT NULL,
+    repetido          TINYINT(1)   NOT NULL DEFAULT 0,
+    por_garantia      TINYINT(1)   NOT NULL DEFAULT 0,
+    monedas_otorgadas INT UNSIGNED NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_gacha_resultados_tirada FOREIGN KEY (tirada_id) REFERENCES gacha_tiradas (id),
+    CONSTRAINT fk_gacha_resultados_premio FOREIGN KEY (premio_id) REFERENCES gacha_premios (id),
+    INDEX ix_gacha_resultados_rareza (rareza)
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------

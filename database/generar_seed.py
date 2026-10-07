@@ -9,10 +9,15 @@ siempre muestren actividad reciente.
 Uso:  python database/generar_seed.py   (requiere: pip install bcrypt)
 """
 import random
+import sys
 import uuid
 from pathlib import Path
 
 import bcrypt
+
+# Mismas reglas que el servidor (simulador de carreras y gachapón)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
+from app.services import gacha, simulador  # noqa: E402
 
 random.seed(2026)
 SALIDA = Path(__file__).with_name("seed.sql")
@@ -78,6 +83,32 @@ LOGROS = [
     (8, "velocista", "Velocista", "Obtén 800 puntos o más en una sola partida.", "puntaje_partida", 800, 75),
 ]
 
+# Atributos de carrera para las apuestas simuladas: item_id, velocidad, resistencia, arranque
+ATRIBUTOS = [(1, 84, 58, 40), (2, 79, 88, 55), (3, 81, 60, 78), (4, 80, 74, 62)]
+
+PAQUETES = [
+    # id, nombre, monedas, bonus, precio_mxn, destacado
+    (1, "Puñado de monedas", 300, 0, "19.00", 0),
+    (2, "Bolsa de monedas", 800, 80, "49.00", 0),
+    (3, "Cofre de monedas", 1700, 300, "99.00", 1),
+    (4, "Bóveda dorada", 4500, 1000, "249.00", 0),
+]
+
+PREMIOS = [
+    # id, nombre, rareza, tipo, item_id, monedas, peso, monedas_repetido
+    (1, "Bolsita de monedas", "comun", "monedas", None, 30, 6, 0),
+    (2, "Saco de monedas", "comun", "monedas", None, 60, 3, 0),
+    (3, "Escenario Atardecer", "rara", "item", 6, None, 2, 80),
+    (4, "Cofre de monedas", "rara", "monedas", None, 200, 3, 0),
+    (5, "El Condor Pasa", "epica", "item", 3, None, 1, 250),
+    (6, "Jungle Pocket", "epica", "item", 4, None, 1, 250),
+]
+PREMIOS_DICT = [{"id": i, "nombre": n, "rareza": r, "tipo": t, "item_id": it, "monedas": m, "peso": pe, "monedas_repetido": rp}
+                for i, n, r, t, it, m, pe, rp in PREMIOS]
+CORREDORAS = [{"id": i, "velocidad": v, "resistencia": r, "arranque": a} for i, v, r, a in ATRIBUTOS]
+MOMIOS = simulador.momios(CORREDORAS)
+NOMBRE_ITEM = {i[0]: i[3] for i in ITEMS}
+
 NOMBRES = [
     ("carlos_r", "Carlos R."), ("ana_speed", "Ana Speed"), ("luisito99", "Luisito"),
     ("valeria.m", "Vale M."), ("diego_turbo", "Diego Turbo"), ("sofia_uma", "Sofía"),
@@ -111,6 +142,15 @@ def main():
     w("INSERT INTO logros (id, codigo, nombre, descripcion, condicion, valor_objetivo, recompensa_monedas) VALUES")
     w(",\n".join(f"  ({i}, {q(c)}, {q(n)}, {q(d)}, {q(k)}, {v}, {r})" for i, c, n, d, k, v, r in LOGROS) + ";")
     w("")
+    w("INSERT INTO atributos_carrera (item_id, velocidad, resistencia, arranque) VALUES")
+    w(",\n".join(f"  ({i}, {v}, {r}, {a})" for i, v, r, a in ATRIBUTOS) + ";")
+    w("")
+    w("INSERT INTO paquetes_monedas (id, nombre, monedas, bonus, precio_mxn, destacado) VALUES")
+    w(",\n".join(f"  ({i}, {q(n)}, {m}, {b}, {p}, {d})" for i, n, m, b, p, d in PAQUETES) + ";")
+    w("")
+    w("INSERT INTO gacha_premios (id, nombre, rareza, tipo, item_id, monedas, peso, monedas_repetido) VALUES")
+    w(",\n".join(f"  ({i}, {q(n)}, {q(r)}, {q(t)}, {q(it)}, {q(m)}, {pe}, {rp})" for i, n, r, t, it, m, pe, rp in PREMIOS) + ";")
+    w("")
 
     # ---- Usuarios ----
     usuarios = [
@@ -137,12 +177,14 @@ def main():
     # ---- Simulación de actividad por jugador ----
     perfiles, partidas, compras, inventario = [], [], [], []
     movimientos, visualizaciones, usuario_logros, bitacora = [], [], [], []
-    partida_id = compra_id = vis_id = 0
+    ordenes, sesiones_juego, apuestas, tiradas, resultados = [], [], [], [], []
+    partida_id = compra_id = vis_id = orden_id = apuesta_id = tirada_id = 0
+    rng_sim = random.Random(7)
 
     for uid, rol, user, email, pw, nombre, dias, actividad in usuarios:
         bitacora.append((uid, "registro", "usuarios", uid, None, f"usuario={user}", dias * 86400))
         if rol == 1:
-            perfiles.append((uid, nombre, "Cuenta de administración.", 0, None, None))
+            perfiles.append((uid, nombre, "Cuenta de administración.", 0, None, None, 0))
             continue
 
         eventos = []  # (segundos_atras, tipo, datos)
@@ -152,10 +194,19 @@ def main():
                     eventos.append((d * 86400 - random.randint(0, 80000), "partida", None))
             if random.random() < actividad * 0.4:
                 eventos.append((d * 86400 - random.randint(0, 80000), "anuncio", random.choice(ANUNCIOS)))
+            if random.random() < actividad * 0.6:
+                eventos.append((d * 86400 - random.randint(0, 80000), "tiempo", random.randint(6, 40)))
+            if random.random() < actividad * 0.25:
+                eventos.append((d * 86400 - random.randint(0, 80000), "apuesta", None))
+            if random.random() < actividad * 0.12:
+                eventos.append((d * 86400 - random.randint(0, 80000), "gacha", None))
+            if random.random() < actividad * 0.03:
+                eventos.append((d * 86400 - random.randint(0, 80000), "pago", random.choice(PAQUETES)))
         eventos = [e for e in eventos if e[0] > 60]
         eventos.sort(key=lambda e: -e[0])
 
         saldo = 0
+        sin_epica = 0
         poseidos = set(PERSONAJES_GRATIS)
         escenarios = {ESCENARIO_BASE}
         cont = {"partidas_jugadas": 0, "victorias": 0, "anuncios_vistos": 0, "compras": 0, "puntaje_partida": 0}
@@ -197,6 +248,51 @@ def main():
                 cont["victorias"] += gana == "J1"
                 cont["puntaje_partida"] = max(cont["puntaje_partida"], puntaje)
                 revisar_logros(seg - dur // 1000)
+            elif tipo == "tiempo":
+                minutos = datos
+                ganadas = min(60, (minutos // 5) * 5)
+                sesiones_juego.append((uid, str(uuid.UUID(int=random.getrandbits(128))), seg, minutos * 60, ganadas))
+                if ganadas:
+                    mover("tiempo_juego", ganadas, None, f"Tiempo de juego activo ({minutos} min)", seg - minutos * 60)
+            elif tipo == "pago":
+                pid, pnombre, pmon, pbonus, precio, _ = datos
+                orden_id += 1
+                folio = f"PAY-{orden_id:06d}"
+                total = pmon + pbonus
+                ordenes.append((orden_id, folio, uid, pid, total, precio, seg))
+                mover("compra_monedas", total, folio, f"Compra con Google Pay (TEST): {pnombre}", seg)
+                bitacora.append((uid, "pago_confirmado", "ordenes_pago", folio, "estado=pendiente", f"estado=pagada; monedas={total}", seg))
+            elif tipo == "apuesta":
+                if saldo < 20:
+                    continue
+                monto = min(saldo, random.choice([20, 30, 50, 100]))
+                eleccion = random.choice(CORREDORAS)["id"]
+                momio = MOMIOS[eleccion]["momio"]
+                ganadora = simulador.simular(CORREDORAS, rng_sim)["orden"][0]
+                apuesta_id += 1
+                folio = f"BET-{apuesta_id:06d}"
+                gano = ganadora == eleccion
+                pago = int(monto * momio) if gano else 0
+                apuestas.append((apuesta_id, folio, uid, monto, eleccion, momio, "ganada" if gano else "perdida", pago, ganadora, seg))
+                mover("apuesta", -monto, folio, f"Apuesta a {NOMBRE_ITEM[eleccion]}", seg)
+                if gano:
+                    mover("premio_apuesta", pago, folio, f"Premio de apuesta: ganó {NOMBRE_ITEM[ganadora]}", seg - 20)
+            elif tipo == "gacha":
+                if saldo < gacha.COSTO_TIRADA:
+                    continue
+                tirada_id += 1
+                folio = f"GCH-{tirada_id:06d}"
+                tiradas.append((tirada_id, folio, uid, 1, gacha.COSTO_TIRADA, seg))
+                mover("gacha", -gacha.COSTO_TIRADA, folio, "Tirada de gachapón x1", seg)
+                premio, garantia, sin_epica = gacha.tirar(PREMIOS_DICT, sin_epica, rng_sim)
+                repetido = premio["tipo"] == "item" and (premio["item_id"] in poseidos or premio["item_id"] in escenarios)
+                otorgadas = premio["monedas_repetido"] if repetido else (premio["monedas"] or 0)
+                resultados.append((tirada_id, premio["id"], premio["rareza"], int(repetido), int(garantia), otorgadas))
+                if premio["tipo"] == "item" and not repetido:
+                    inventario.append((uid, premio["item_id"], None, seg, "gacha"))
+                    (escenarios if premio["item_id"] in (5, 6) else poseidos).add(premio["item_id"])
+                if otorgadas:
+                    mover("premio_gacha", otorgadas, folio, f"Gachapón: {premio['nombre']}{' (repetido)' if repetido else ''}", seg)
             else:
                 aid, titulo, _, _, _, dur_ad, recompensa = datos
                 vis_id += 1
@@ -215,7 +311,7 @@ def main():
                     folio = f"UMA-{compra_id:06d}"
                     s2 = seg - 30
                     compras.append((compra_id, folio, uid, iid, precio, s2))
-                    inventario.append((uid, iid, compra_id, s2))
+                    inventario.append((uid, iid, compra_id, s2, "compra"))
                     mover("compra", -precio, folio, f"Compra de {inombre}", s2)
                     bitacora.append((uid, "compra", "compras", folio, None, f"item={codigo}; precio={precio}", s2))
                     (escenarios if item[1] == 2 else poseidos).add(iid)
@@ -223,12 +319,13 @@ def main():
                     revisar_logros(s2)
 
         favorito = random.choice(sorted(poseidos))
+        sin_epica_final = sin_epica
         esc_eq = max(escenarios)
-        perfiles.append((uid, nombre, "", saldo, favorito, esc_eq))
+        perfiles.append((uid, nombre, "", saldo, favorito, esc_eq, sin_epica_final))
 
     # ---- Volcado ----
-    w("INSERT INTO perfiles (usuario_id, nombre_mostrar, biografia, monedas, personaje_favorito_id, escenario_equipado_id) VALUES")
-    w(",\n".join(f"  ({u}, {q(n)}, {q(b)}, {m}, {q(f)}, {q(e)})" for u, n, b, m, f, e in perfiles) + ";")
+    w("INSERT INTO perfiles (usuario_id, nombre_mostrar, biografia, monedas, personaje_favorito_id, escenario_equipado_id, tiradas_sin_epica) VALUES")
+    w(",\n".join(f"  ({u}, {q(n)}, {q(b)}, {m}, {q(f)}, {q(e)}, {se})" for u, n, b, m, f, e, se in perfiles) + ";")
     w("")
 
     def bloques(cabecera, filas, tam=200):
@@ -240,7 +337,19 @@ def main():
     bloques("INSERT INTO compras (id, folio, usuario_id, item_id, precio_pagado, creada_en) VALUES",
             [f"  ({c}, {q(f)}, {u}, {i}, {p}, {hace(s)})" for c, f, u, i, p, s in compras])
     bloques("INSERT INTO inventario_usuario (usuario_id, item_id, compra_id, origen, adquirido_en) VALUES",
-            [f"  ({u}, {i}, {c}, 'compra', {hace(s)})" for u, i, c, s in inventario])
+            [f"  ({u}, {i}, {q(c)}, {q(o)}, {hace(s)})" for u, i, c, s, o in inventario])
+    bloques("INSERT INTO ordenes_pago (id, folio, usuario_id, paquete_id, monedas, monto, estado, referencia_pago, red_tarjeta, creada_en, expira_en, pagada_en) VALUES",
+            [f"  ({o}, {q(f)}, {u}, {p}, {m}, {pr}, 'pagada', {q(uuid.UUID(int=random.getrandbits(128)).hex + uuid.UUID(int=random.getrandbits(128)).hex)}, "
+             f"{q(random.choice(['VISA', 'MASTERCARD']))}, {hace(s + 40)}, {hace(s - 860)}, {hace(s)})" for o, f, u, p, m, pr, s in ordenes])
+    bloques("INSERT INTO sesiones_juego (usuario_id, token, estado, iniciada_en, ultimo_latido, segundos_activos, segundos_sin_pagar, monedas_otorgadas) VALUES",
+            [f"  ({u}, {q(t)}, 'cerrada', {hace(s)}, {hace(s - sec)}, {sec}, {sec % 300}, {m})" for u, t, s, sec, m in sesiones_juego])
+    bloques("INSERT INTO apuestas (id, folio, usuario_id, tipo, monto, item_id, momio, estado, pago, ganador_id, resultado, creada_en, resuelta_en) VALUES",
+            [f"  ({a}, {q(f)}, {u}, 'carrera', {m}, {e}, {mo}, {q(es)}, {pg}, {g}, {q('Ganó ' + NOMBRE_ITEM[g])}, {hace(s)}, {hace(s - 20)})"
+             for a, f, u, m, e, mo, es, pg, g, s in apuestas])
+    bloques("INSERT INTO gacha_tiradas (id, folio, usuario_id, cantidad, costo, creada_en) VALUES",
+            [f"  ({t}, {q(f)}, {u}, {c}, {co}, {hace(s)})" for t, f, u, c, co, s in tiradas])
+    bloques("INSERT INTO gacha_resultados (tirada_id, premio_id, rareza, repetido, por_garantia, monedas_otorgadas) VALUES",
+            [f"  ({t}, {p}, {q(r)}, {rp}, {g}, {m})" for t, p, r, rp, g, m in resultados])
     bloques("INSERT INTO partidas (id, usuario_id, token, personaje_j1_id, personaje_j2_id, escenario_id, estado, ganador, "
             "duracion_ms, pulsaciones_j1, pulsaciones_j2, puntaje, monedas_ganadas, iniciada_en, finalizada_en) VALUES",
             [f"  ({p}, {u}, {q(t)}, {a}, {b}, {e}, 'finalizada', {q(g)}, {d}, {x}, {y}, {pt}, {m}, {hace(s)}, {hace(s - d // 1000)})"
@@ -255,8 +364,9 @@ def main():
             [f"  ({u}, {q(a)}, {q(e)}, {q(i)}, {q(x)}, {q(y)}, {hace(s)})" for u, a, e, i, x, y, s in bitacora])
 
     SALIDA.write_text("\n".join(sql), encoding="utf-8")
-    print(f"seed.sql generado: {len(usuarios)} usuarios, {len(partidas)} partidas, "
-          f"{len(compras)} compras, {len(visualizaciones)} anuncios vistos, {len(movimientos)} movimientos")
+    print(f"seed.sql generado: {len(usuarios)} usuarios, {len(partidas)} partidas, {len(compras)} compras, "
+          f"{len(visualizaciones)} anuncios, {len(ordenes)} pagos, {len(apuestas)} apuestas, {len(tiradas)} tiradas, "
+          f"{len(movimientos)} movimientos")
 
 
 if __name__ == "__main__":

@@ -110,8 +110,8 @@ Copia `.env.example` como `.env` en la raíz y ajusta los valores:
 ## Ejecución
 
 ```bash
-# 1. Compilar el juego para el navegador (genera game/build/web)
-python -X utf8 -m pygbag --build game
+# 1. Compilar el juego para el navegador (genera game/build/web) con la plantilla propia
+python -X utf8 -m pygbag --build --template plantilla_juego/umaracing.tmpl game
 
 # 2. Iniciar la API (también sirve el frontend y el juego)
 cd backend
@@ -122,6 +122,11 @@ uvicorn app.main:app --reload --port 8000
 - Documentación interactiva de la API (Swagger): http://localhost:8000/docs
 
 El juego también funciona en escritorio sin conexión: `python game/main.py`.
+
+> **Importante:** compila siempre con `--template plantilla_juego/umaracing.tmpl`. La plantilla trae la pantalla de
+> carga del juego y corrige un comportamiento de pygbag: en direcciones `http://localhost:8...` pide pygame a
+> `http://localhost:8000/cdn/` (su servidor de pruebas) y el juego falla con `module 'pygame' has no attribute 'mixer'`.
+> La plantilla fija el CDN público de paquetes para que funcione en cualquier servidor y puerto.
 
 ### Pruebas
 

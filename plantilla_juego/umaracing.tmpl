@@ -1,0 +1,587 @@
+<html lang="en-us"><script src="{{cookiecutter.cdn}}pythons.js" type=module id="site" data-python="python{{cookiecutter.PYBUILD}}" data-LINES=42 data-COLUMNS=132 data-os="vtx,snd,gui" async defer>#<!--
+
+print("""
+Loading {{cookiecutter.title}} from {{cookiecutter.archive}}.apk
+    Pygbag Version : {{cookiecutter.version}}
+    Template Version : 0.9.3
+    Python  : {{cookiecutter.PYBUILD}}
+    CDN URL : {{cookiecutter.cdn}}
+    Screen  : {{cookiecutter.width}}x{{cookiecutter.height}}
+    Title   : {{cookiecutter.title}}
+    Folder  : {{cookiecutter.directory}}
+    Authors : {{cookiecutter.authors}}
+    SPDX-License-Identifier: {{cookiecutter.spdx}}
+
+""")
+
+import sys
+import asyncio
+import platform
+import json
+from pathlib import Path
+
+# do not rename
+async def custom_site():
+    import embed
+    platform.document.body.style.background = "#0e0b26"
+
+    # UmaRacing: los paquetes (pygame para WebAssembly) siempre se descargan del CDN público.
+    # pygbag reescribe cualquier dirección "http://localhost:8..." a http://localhost:8000/cdn/ (su servidor
+    # de desarrollo), lo que rompe el juego en cualquier otro servidor o puerto. PYGPI fija el repositorio.
+    CDN_PAQUETES = "https://pygame-web.github.io/cdn/"
+    import os
+    os.environ["PYGPI"] = CDN_PAQUETES
+    PyConfig.pkg_indexes = [CDN_PAQUETES]
+    try:
+        # El índice de paquetes ya se descargó y se reescribió antes de este punto: se corrige aquí,
+        # antes de que main.py pida pygame.
+        import aio.pep0723
+        for repo in aio.pep0723.Config.pkg_repolist:
+            repo["-CDN-"] = CDN_PAQUETES
+    except Exception as e:
+        print("UmaRacing: no se pudo fijar el CDN de paquetes:", e)
+
+    platform.window.transfer.hidden = true
+    platform.window.canvas.style.visibility = "visible"
+
+
+    bundle = "{{cookiecutter.archive}}"
+
+    # the C or js loader could do that but be explicit.
+    appdir = Path(f"/data/data/{bundle}") # /data/data/{{cookiecutter.archive}}
+    appdir.mkdir()
+
+
+    # unpack filesystem from compressed archive into work dir
+    if platform.window.location.host.find('.itch.zone')>0:
+        import zipfile
+        async with platform.fopen("{{cookiecutter.archive}}.apk", "rb") as archive:
+            with zipfile.ZipFile(archive) as zip_ref:
+                zip_ref.extractall(appdir.as_posix())
+    else:
+        import tarfile
+        async with platform.fopen("{{cookiecutter.archive}}.tar.gz", "rb") as archive:
+            tar = tarfile.open(fileobj=archive, mode="r:gz")
+            tar.extractall(path=appdir.as_posix(), filter='tar')
+            tar.close()
+
+    # preloader will change to work dir and prepend it to sys.path
+    platform.run_main(PyConfig, loaderhome= appdir / "assets", loadermain=None)
+
+
+    # wait preloading complete : that includes images and wasm compilation of bundled modules
+    while embed.counter()<0:
+        await asyncio.sleep(.1)
+
+    main = appdir / "assets" / "main.py"
+
+    # TODO: test for window.webkitAudioContext and block aio loop until gesture if accessing media manager play
+    # before a gesture is recorded ( touch or click )
+
+    # test/wait user media interaction
+    if not platform.window.MM.UME:
+
+        # now that apk is mounted we have access to font cache
+        # but we need to fill __file__ that is not yet set
+        __import__(__name__).__file__ = main
+
+        # now make a prompt
+        msg  = "PRESS START"
+        platform.window.infobox.innerText = msg
+        print("\n"*4, f"    * Waiting for media user engagement. {msg} *" , "\n"*4)
+
+        while not platform.window.MM.UME:
+            await asyncio.sleep(.1)
+
+    # start async top level machinery if not started and add a console in any case if requested.
+    await TopLevel_async_handler.start_toplevel(platform.shell, console=window.python.config.debug)
+
+    # now that apk is mounted we have access to font cache
+    # but we need to fill __file__/__name__ that are not yet set
+    __import__(__name__).__file__ = main
+
+
+    def ui_callback(pkg):
+        platform.window.infobox.innerText = f"installing {pkg}"
+
+    await shell.source(main, callback=ui_callback)
+
+    # if you don't reach that step
+    # your main.py has an infinite sync loop somewhere !
+
+    platform.window.infobox.style.display = "none"
+    platform.window.config.gui_divider = 1
+    platform.window.window_resize()
+    print("default.tmpl: done")
+
+    shell.interactive()
+
+asyncio.run( custom_site() )
+
+
+
+
+
+
+
+
+
+
+
+
+# BEGIN BLOCK
+#
+# now this is the html part you can (and should) customize
+# It is not mandatory : pygame-script when it reads the first line (also called
+# shebang ) of above code create absolute minimal widget set
+# required for running with default rules
+#
+# do not alter that comment block it is separating python code from html code
+# =============================================================================
+# --></script><head><!--
+//=============================================================================
+//
+//
+//
+//
+//
+//
+//
+
+    {%- if cookiecutter.comment != "" -%}
+{{cookiecutter.comment}}
+    {% endif %}
+
+--><script type="application/javascript">
+// END BLOCK
+
+
+
+// this dict is available under PyConfig.config from __main__
+
+config = {
+    xtermjs : "{{cookiecutter.xtermjs}}" ,
+    _sdl2 : "canvas",
+    user_canvas : 0,
+    user_canvas_managed : 0,
+    gui_divider : 2,
+    ume_block : {{cookiecutter.ume_block}},
+    can_close : {{cookiecutter.can_close}},
+    archive : "{{cookiecutter.archive}}",
+    gui_debug : 2,
+    cdn : "{{cookiecutter.cdn}}",
+    autorun : {{cookiecutter.autorun}},
+    PYBUILD : "{{cookiecutter.PYBUILD}}",
+    fb_ar   :  1.77,
+    fb_width : "{{cookiecutter.width}}",
+    fb_height : "{{cookiecutter.height}}"
+}
+
+function show_infobox() {
+    infobox.style.display = "block";
+
+    // Measure box
+    const w = infobox.offsetWidth;
+    const h = infobox.offsetHeight;
+
+    // Center in viewport
+    const left = (window.innerWidth - w) / 2;
+    const top = (window.innerHeight - h) / 2;
+
+    infobox.style.left = left + "px";
+    infobox.style.top = top + "px";
+}
+
+</script>
+
+    <title>{{cookiecutter.title}}</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="height=device-height, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+
+
+    <link rel="icon" type="image/png" href="favicon.png" sizes="16x16">
+
+    <style>
+        #status {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 20px;
+            margin-left: 30px;
+            font-weight: bold;
+            color: rgb(120, 120, 120);
+        }
+
+        #progress {
+            height: 20px;
+            width: 300px;
+        }
+
+        #infobox {
+            position: fixed; /* center relative to viewport */
+            background: green;
+            color: blue;
+            font-weight: bold;
+            padding: 12px 24px;
+ /*           display: none; */
+            z-index: 999999;
+        }
+        div.emscripten { text-align: center; }
+        div.emscripten_border { border: 1px solid black; }
+        div.thick_border { border: 4px solid black; }
+
+        /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+        /* average size of droid screen 470dp x 320dp  */
+        canvas.emscripten {
+            border: 0px none;
+            background-color: transparent;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+
+            padding: 0;
+            margin: 0 auto;
+
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        body {
+            font-family: arial;
+            margin: 0;
+            padding: none;
+            background-color:powderblue;
+        }
+
+        .topright{
+           position:absolute;
+           top:0px;
+           right:0px;
+        }
+
+        .bottomright {
+            position:absolute;
+            top: 40%;
+            right: 0px;
+        }
+
+        .center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .trinfo{
+           position: relative;
+           right: 0px;
+           border: 1px solid black;
+        }
+
+        .framed{
+           position: relative;
+           top: 150px;
+           right: 10px;
+           border: 1px solid black;
+        }
+    </style>
+
+    <script>
+/*
+        if (navigator.serviceWorker)
+            navigator.serviceWorker.register("{{cookiecutter.cdn}}pygbag{{cookiecutter.version}}.js")
+        else
+            console.warn("Service workers not supported")
+*/
+    </script>
+
+    <script src="{{cookiecutter.cdn}}/browserfs.min.js"></script>
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@500;700&family=Silkscreen&display=swap">
+    <style>
+        /* ===== UmaRacing: pantalla de carga "Arcade nocturno" ===== */
+        html, body { background: #0e0b26 !important; overflow: hidden; }
+        #transfer { position: absolute; opacity: 0; pointer-events: none; }
+        #infobox { visibility: hidden !important; }
+        #uma-carga {
+            position: fixed; inset: 0; z-index: 2000000; display: grid; place-items: center; overflow: hidden;
+            font-family: "Chakra Petch", system-ui, sans-serif; color: #f1edff; cursor: default;
+            background: linear-gradient(180deg, #120838 0%, #2e0d52 52%, #ff3ea5 53.2%, #12062e 54%);
+            transition: opacity .5s ease;
+        }
+        #uma-carga.fuera { opacity: 0; pointer-events: none; }
+        #uma-carga::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 3px); }
+        .uc-sol { position: absolute; left: 50%; top: 9%; width: 34vmin; height: 34vmin; transform: translateX(-50%); border-radius: 50%;
+            background: linear-gradient(180deg, #ffe14d 0%, #ff8a3d 45%, #ff3ea5 82%);
+            -webkit-mask: repeating-linear-gradient(180deg, #000 0 11px, transparent 11px 15px); mask: repeating-linear-gradient(180deg, #000 0 11px, transparent 11px 15px);
+            filter: drop-shadow(0 0 40px rgba(255, 62, 165, .65)); opacity: .9; }
+        .uc-piso { position: absolute; left: -50%; right: -50%; bottom: 0; height: 47%;
+            background-image: linear-gradient(#ff3ea5 2px, transparent 2px), linear-gradient(90deg, #ff3ea5 2px, transparent 2px);
+            background-size: 56px 56px; transform: perspective(280px) rotateX(60deg); transform-origin: top; opacity: .5;
+            animation: uc-avanzar 1s linear infinite; }
+        @keyframes uc-avanzar { to { background-position: 0 56px; } }
+        .uc-centro { position: relative; z-index: 1; width: min(560px, 88vw); text-align: center; }
+        .uc-titulo { font-family: "Bungee", sans-serif; font-size: clamp(34px, 9vmin, 84px); line-height: .92; letter-spacing: 2px;
+            background: linear-gradient(180deg, #fff 18%, #9fe9ff 47%, #2a1a6e 51%, #ff9be0 82%); -webkit-background-clip: text; background-clip: text; color: transparent;
+            filter: drop-shadow(4px 4px 0 #000); margin-bottom: 4vmin; }
+        .uc-pista { position: relative; height: 54px; margin: 0 auto 10px; }
+        .uc-corredora { position: absolute; bottom: 8px; left: 0; width: 44px; height: 52px; transform: translateX(-50%);
+            transition: left .35s ease-out; animation: uc-trote .28s steps(2) infinite; }
+        .uc-corredora img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255, 62, 165, .7)); }
+        @keyframes uc-trote { 50% { transform: translateX(-50%) translateY(-4px); } }
+        .uc-barra { height: 16px; border: 2px solid #4a3fa3; background: #08061a; border-radius: 3px; overflow: hidden; box-shadow: 4px 4px 0 #000; }
+        #uc-progreso { height: 100%; width: 0; transition: width .35s ease-out;
+            background: repeating-linear-gradient(90deg, #ffd23f 0 10px, #e6b520 10px 13px); box-shadow: 0 0 14px rgba(255, 210, 63, .7);
+            animation: uc-rayas .6s linear infinite; }
+        @keyframes uc-rayas { to { background-position: 26px 0; } }
+        .uc-fila { display: flex; justify-content: space-between; margin-top: 10px; font-family: "Silkscreen", monospace; font-size: 12px; letter-spacing: 1px; color: #b3abe6; }
+        #uc-pct { color: #ffd23f; }
+        .uc-tip { margin-top: 3vmin; font-size: 14px; color: #b3abe6; min-height: 1.4em; text-shadow: 1px 1px 0 #000; }
+        .uc-start { margin-top: 3vmin; font-family: "Bungee", sans-serif; font-size: clamp(18px, 4vmin, 28px); letter-spacing: 2px;
+            color: #241a00; background: #ffd23f; border: 3px solid #fff3b0; border-radius: 6px; padding: 12px 30px; cursor: pointer;
+            box-shadow: 0 6px 0 #b58a00, 0 0 30px rgba(255, 210, 63, .5); animation: uc-latido 1s ease-in-out infinite; }
+        .uc-start:active { transform: translateY(4px); box-shadow: 0 2px 0 #b58a00; }
+        @keyframes uc-latido { 50% { filter: brightness(1.15); box-shadow: 0 6px 0 #b58a00, 0 0 50px rgba(255, 210, 63, .85); } }
+        #uma-carga.error .uc-estado { color: #ff8fa3; }
+        @media (prefers-reduced-motion: reduce) { #uma-carga * { animation: none !important; } }
+    </style>
+</head>
+
+<body>
+
+    <div id="uma-carga" role="status" aria-live="polite">
+        <div class="uc-sol" aria-hidden="true"></div><div class="uc-piso" aria-hidden="true"></div>
+        <div class="uc-centro">
+            <div class="uc-titulo">UMA<br>RACING</div>
+            <div class="uc-pista" aria-hidden="true"><div class="uc-corredora" id="uc-corredora"><img src="/img/logo.png" alt="" onerror="this.remove()"></div></div>
+            <div class="uc-barra"><div id="uc-progreso"></div></div>
+            <div class="uc-fila"><span class="uc-estado" id="uc-estado">PREPARANDO LA PISTA…</span><span id="uc-pct">0%</span></div>
+            <button class="uc-start" id="uc-start" hidden>▶ PRESS START</button>
+            <div class="uc-tip" id="uc-tip">Jugador 1: alterna A y D lo más rápido que puedas.</div>
+        </div>
+    </div>
+
+    <script>
+    (() => {
+        // La carga real la reporta pygbag en #progress, #status e #infobox; aquí solo se traduce a esta pantalla.
+        const $ = (id) => document.getElementById(id);
+        const TIPS = [
+            "Jugador 1: alterna A y D lo más rápido que puedas.",
+            "Jugador 2: alterna ← y → para correr.",
+            "Gana carreras como Jugador 1 para sumar monedas y puntos.",
+            "Desbloquea a El Condor Pasa y Jungle Pocket en la tienda o en el gachapón.",
+            "Cada 5 minutos de juego activo te dan monedas extra.",
+            "¿Apostaste a tu tiempo? Tu siguiente victoria decide el reto.",
+        ];
+        let pct = 0, tip = 0, listo = false, terminado = false, visto = false;
+        const fijar = (valor, texto) => {
+            pct = Math.max(pct, Math.min(100, valor));
+            $("uc-progreso").style.width = pct + "%";
+            $("uc-corredora").style.left = pct + "%";
+            $("uc-pct").textContent = Math.round(pct) + "%";
+            if (texto) $("uc-estado").textContent = texto;
+        };
+        const rotar = setInterval(() => { tip = (tip + 1) % TIPS.length; $("uc-tip").textContent = TIPS[tip]; }, 3500);
+        let falso = 0;
+        const revisar = setInterval(() => {
+            const box = document.getElementById("infobox");
+            const prog = document.getElementById("progress");
+            const texto = (box && box.innerText) || "";
+            if (box && box.style.display === "block") visto = true;
+            // pygbag oculta su aviso cuando el juego ya corre (con o sin el paso "PRESS START")
+            if (box && box.style.display === "none" && (visto || listo)) return cerrar();
+            if (/PRESS START|Ready to start/i.test(texto)) {
+                if (!listo) {
+                    listo = true;
+                    fijar(100, "¡LISTO!");
+                    $("uc-start").hidden = false;
+                    $("uc-tip").textContent = "Haz clic para activar el sonido y el teclado.";
+                    clearInterval(rotar);
+                }
+                return;
+            }
+            if (/installing/i.test(texto)) return fijar(Math.max(pct, 82) + 0.4, "INSTALANDO EL MOTOR…");
+            if (prog && prog.max > 0 && prog.value > 0 && prog.value < prog.max) return fijar(10 + 65 * (prog.value / prog.max), "DESCARGANDO…");
+            // Avance suave mientras se compila el intérprete (no reporta progreso)
+            falso += 0.25;
+            fijar(Math.min(78, 4 + falso), pct < 40 ? "PREPARANDO LA PISTA…" : "CALENTANDO MOTORES…");
+        }, 120);
+        function cerrar() {
+            if (terminado) return;
+            terminado = true;
+            clearInterval(revisar);
+            clearInterval(rotar);
+            $("uma-carga").classList.add("fuera");
+            setTimeout(() => $("uma-carga").remove(), 600);
+            const c = document.getElementById("canvas");
+            if (c) c.focus();
+        }
+        // El clic en "PRESS START" cuenta como interacción del usuario (requisito del navegador para el audio)
+        $("uc-start").addEventListener("click", () => {
+            $("uc-start").textContent = "¡A CORRER!";
+            $("uc-estado").textContent = "ARRANCANDO…";
+            setTimeout(() => { if (!terminado) cerrar(); }, 4000);
+        });
+        setTimeout(() => {
+            if (listo || terminado) return;
+            $("uma-carga").classList.add("error");
+            $("uc-tip").textContent = "Está tardando más de lo normal. Revisa tu conexión a internet o recarga el juego.";
+        }, 45000);
+    })();
+    </script>
+
+
+    <div id="transfer" align=center>
+<!--        <div class="spinner" id='spinner'></div> -->
+        <div class="emscripten" id="status">Downloading...</div>
+        <div class="emscripten">
+            <progress value="0" max="100" id="progress"></progress>
+        </div>
+    </div>
+
+
+
+    <canvas class="emscripten" id="canvas"
+width="1px"
+height="1px"
+    oncontextmenu="event.preventDefault()" tabindex=1>
+    </canvas>
+
+    <canvas class="emscripten" id="canvas3d"
+width="{{cookiecutter.width}}px"
+height="{{cookiecutter.height}}px"
+    oncontextmenu="event.preventDefault()" tabindex=1 hidden>
+    </canvas>
+
+    <div id="infobox">Loading, please wait ...</div>
+
+    <div id=html></div>
+
+    <div id=crt  class=bottomright >
+
+        <div id="system" hidden>
+            <div class="button-container">
+                <button id="aiostop" disabled>AIO ⏏︎</button>
+                <button id="aiopaused_true" disabled>AIO ■</button>
+                <button id="aiopaused_false" disabled>AIO ▶</button>
+                <button id="pygame_mixer_music_pause" disabled>Music ■</button>
+            </div>
+
+            <div class="button-container">
+                <div id=load_min>min</div>
+                <div id=load_avg>avg</div>
+                <div id=load_max>max</div>
+              <button id="load_rst" disabled>RESET</button>
+            </div>
+
+            <div id="level">(battery level unknown)</div>
+            <div id="stateBattery">(charging state unknown)</div>
+
+        </div>
+
+        <div id=box class="emscripten_border" hidden=true>
+
+            <div id="info" class="trinfo"></div>
+
+            <iframe id="iframe" class="framed" name="iframe"
+width="470px" height="90%"
+allowtransparency="true"
+style="z-index: 10;"
+style="background: #FFFFFF;"
+frameborder="1"
+                allowfullscreen="true"
+                webkitallowfullscreen="true"
+                msallowfullscreen="true"
+                mozallowfullscreen="true"
+                sandbox="allow-same-origin allow-top-navigation allow-scripts allow-pointer-lock"
+                allow="autoplay; fullscreen *; geolocation; microphone; camera; midi; monetization; xr-spatial-tracking; gamepad; gyroscope; accelerometer; xr; cross-origin-isolated"
+                src="{{cookiecutter.cdn}}empty.html"
+                scrolling="yes">
+            </iframe>
+        </div>
+
+    </div>
+
+
+    <div id="dlg" hidden>
+        <input type="file" id="dlg_multifile" multiple accept="image/*">
+        <label for="dlg_multifile">Select files</label>
+    </div>
+
+    <div id="pyconsole">
+        <div id="terminal" tabIndex=1 align="left"></div>
+    </div>
+
+    <script type="application/javascript">
+
+    globalThis.__canvas_resized = (self, ecw, ech) => {
+        console.warn("TODO: panda3d canvas monitor", self, ecw, ech)
+    }
+
+    async function custom_onload(debug_hidden) {
+        // this is called before anything python is loaded
+        // make your js customization here
+        console.log(__FILE__, "custom_onload")
+
+        pyconsole.hidden = debug_hidden
+        system.hidden = debug_hidden
+        transfer.hidden = debug_hidden
+        info.hidden = debug_hidden
+        box.hidden =  debug_hidden
+
+        show_infobox()
+    }
+
+    function custom_prerun(){
+        // no python main and no (MEMFS + VFS) yet.
+        console.log(__FILE__, "custom_prerun")
+
+    }
+
+    function custom_postrun(){
+        // python main and no VFS filesystem yet.
+        console.log(__FILE__, "custom_postrun")
+
+    }
+
+    function debug() {
+        // allow to gain access to dev tools from js console
+        // but only on desktop. difficult to reach when in iframe
+        python.config.debug = true
+        custom_onload(false)
+        Module.PyRun_SimpleString("shell.uptime()")
+        window_resize()
+    }
+
+    function info_inline(data){
+        document.getElementById("info").innerHTML = data
+    }
+
+    function info_online(url) {
+        // display info about current APK
+        fetch( url /*, options */)
+            .then((response) => response.text())
+            .then((html) => {
+                info_inline(html);
+        })
+        .catch((error) => {
+            console.warn(error);
+        });
+    }
+
+    function frame_online(url) {
+        window.frames["iframe"].location = url;
+    }
+
+    </script>
+
+</body>
+</html>

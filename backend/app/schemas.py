@@ -234,3 +234,72 @@ class AjusteMonedasIn(_Base):
     @classmethod
     def validar_12(cls, v):
         return _texto(v)
+
+
+# ---------- Monedas con dinero (Google Pay) ----------
+class PaqueteIn(_Base):
+    nombre: str = Field(min_length=3, max_length=60)
+    monedas: int = Field(ge=1, le=1_000_000)
+    bonus: int = Field(ge=0, le=1_000_000)
+    precio_mxn: float = Field(gt=0, le=10000)
+    destacado: bool = False
+    activo: bool = True
+
+    @field_validator("nombre")
+    @classmethod
+    def validar_nombre(cls, v):
+        return _texto(v)
+
+    @field_validator("precio_mxn")
+    @classmethod
+    def validar_precio(cls, v):
+        return round(v, 2)
+
+
+class OrdenIn(_Base):
+    paquete_id: int = Field(gt=0)
+
+
+class GooglePayConfirmarIn(BaseModel):
+    """Objeto PaymentData que devuelve Google Pay (se valida su estructura en el servidor)."""
+    model_config = {"extra": "allow"}
+    apiVersion: int
+    apiVersionMinor: int
+    paymentMethodData: dict
+
+
+# ---------- Tiempo de juego ----------
+class LatidoIn(_Base):
+    interacciones: int = Field(ge=0, le=100_000)
+
+
+# ---------- Apuestas ----------
+class ApuestaCarreraIn(_Base):
+    item_id: int = Field(gt=0)
+    monto: int = Field(gt=0, le=100_000)
+
+
+class ApuestaTiempoIn(_Base):
+    objetivo_s: float = Field(ge=8, le=90)
+    monto: int = Field(gt=0, le=100_000)
+
+
+# ---------- Gachapón ----------
+class TiradaIn(_Base):
+    cantidad: Literal[1, 10]
+
+
+class PremioIn(_Base):
+    nombre: str = Field(min_length=3, max_length=60)
+    rareza: Literal["comun", "rara", "epica"]
+    tipo: Literal["item", "monedas"]
+    item_id: int | None = Field(default=None, gt=0)
+    monedas: int | None = Field(default=None, gt=0, le=100_000)
+    peso: int = Field(ge=1, le=1000)
+    monedas_repetido: int = Field(default=0, ge=0, le=100_000)
+    activo: bool = True
+
+    @field_validator("nombre")
+    @classmethod
+    def validar_nombre(cls, v):
+        return _texto(v)

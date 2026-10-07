@@ -31,8 +31,12 @@ def _dashboard_admin(conn):
           (SELECT COALESCE(SUM(precio_pagado), 0) FROM compras WHERE estado = 'completada'
             AND creada_en >= NOW() - INTERVAL 30 DAY) AS ventas_monedas_30d,
           (SELECT COUNT(*) FROM visualizaciones_anuncio WHERE estado = 'completada' AND completada_en >= CURDATE()) AS anuncios_hoy,
-          (SELECT COALESCE(SUM(monedas), 0) FROM perfiles) AS monedas_en_circulacion
+          (SELECT COALESCE(SUM(monedas), 0) FROM perfiles) AS monedas_en_circulacion,
+          (SELECT COALESCE(SUM(monto), 0) FROM ordenes_pago WHERE estado = 'pagada'
+            AND pagada_en >= NOW() - INTERVAL 30 DAY) AS ingresos_mxn_30d,
+          (SELECT COUNT(*) FROM apuestas WHERE creada_en >= CURDATE()) AS apuestas_hoy
     """)
+    tarjetas["ingresos_mxn_30d"] = float(tarjetas["ingresos_mxn_30d"])
     partidas_7d = todos(conn, """
         SELECT DATE(iniciada_en) AS dia, COUNT(*) AS partidas FROM partidas
         WHERE estado = 'finalizada' AND iniciada_en >= CURDATE() - INTERVAL 6 DAY
@@ -207,3 +211,33 @@ def juego_config(usuario=Depends(usuario_actual), conn=Depends(get_db)):
                        for p in personajes},
         "escenario": escenario["codigo"] if escenario else "clasico",
     }
+
+
+@router.get("/api/reportes/monetizacion", summary="Ingresos por Google Pay, apuestas y gachapón por rango de fechas (admin)")
+def reporte_monetizacion(desde: date | None = None, hasta: date | None = None,
+                         admin=Depends(solo_admin), conn=Depends(get_db)):
+    f, desde, hasta = _rango(desde, hasta)
+    f.agregar("o.estado = 'pagada'").rango_fechas("o.pagada_en", desde, hasta)
+    ingresos_dia = todos(conn, f"SELECT DATE(o.pagada_en) AS dia, COUNT(*) AS ordenes, SUM(o.monto) AS monto "
+                               f"FROM ordenes_pago o {f.where} GROUP BY DATE(o.pagada_en) ORDER BY dia", f.params)
+    por_paquete = todos(conn, f"SELECT p.nombre AS paquete, COUNT(*) AS ordenes, SUM(o.monto) AS monto, SUM(o.monedas) AS monedas "
+                              f"FROM ordenes_pago o JOIN paquetes_monedas p ON p.id = o.paquete_id {f.where} "
+                              f"GROUP BY p.id, p.nombre ORDER BY monto DESC", f.params)
+    g = Filtros().agregar("a.estado IN ('ganada', 'perdida')").rango_fechas("a.creada_en", desde, hasta)
+    apuestas = uno(conn, f"SELECT COUNT(*) AS apuestas, COALESCE(SUM(a.monto), 0) AS apostado, COALESCE(SUM(a.pago), 0) AS pagado, "
+                         f"COALESCE(SUM(a.estado = 'ganada'), 0) AS ganadas FROM apuestas a {g.where}", g.params)
+    apuestas_tipo = todos(conn, f"SELECT a.tipo, COUNT(*) AS apuestas, SUM(a.monto) AS apostado, SUM(a.pago) AS pagado "
+                                f"FROM apuestas a {g.where} GROUP BY a.tipo", g.params)
+    h = Filtros().rango_fechas("t.creada_en", desde, hasta)
+    rarezas = todos(conn, f"SELECT r.rareza, COUNT(*) AS cantidad, SUM(r.por_garantia) AS por_garantia "
+                          f"FROM gacha_resultados r JOIN gacha_tiradas t ON t.id = r.tirada_id {h.where} "
+                          f"GROUP BY r.rareza ORDER BY FIELD(r.rareza, 'comun', 'rara', 'epica')", h.params)
+    gacha_tot = uno(conn, f"SELECT COUNT(*) AS tiradas, COALESCE(SUM(t.costo), 0) AS gastado FROM gacha_tiradas t {h.where}", h.params)
+    for fila in ingresos_dia + por_paquete:
+        fila["monto"] = float(fila["monto"])
+    return {"desde": desde, "hasta": hasta, "ingresos_por_dia": ingresos_dia, "por_paquete": por_paquete,
+            "totales": {"ingresos_mxn": round(sum(r["monto"] for r in ingresos_dia), 2),
+                        "ordenes": sum(r["ordenes"] for r in ingresos_dia)},
+            "apuestas": {**{k: int(v) for k, v in apuestas.items()},
+                         "margen": int(apuestas["apostado"]) - int(apuestas["pagado"]), "por_tipo": apuestas_tipo},
+            "gacha": {**gacha_tot, "rarezas": rarezas}}

@@ -40,6 +40,7 @@ _CODIGOS = {
     422: "validacion",
     429: "limite_alcanzado",
     500: "error_interno",
+    501: "no_implementado",
     503: "servicio_no_disponible",
 }
 

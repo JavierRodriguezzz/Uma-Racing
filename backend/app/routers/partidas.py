@@ -12,6 +12,7 @@ from ..security import es_admin, usuario_actual
 from ..services import bitacora, logros, monedas, reglas
 from ..services.consultas import Filtros, orden_sql, paginar
 from .auth import ip_de
+from .apuestas import resolver_reto, vincular_reto
 from .perfil import puede_usar
 
 router = APIRouter(prefix="/api/partidas", tags=["Partidas"])
@@ -58,6 +59,7 @@ def iniciar(datos: PartidaInicioIn, request: Request, usuario=Depends(usuario_ac
             INSERT INTO partidas (usuario_id, token, personaje_j1_id, personaje_j2_id, escenario_id)
             VALUES (%s, %s, %s, %s, %s)
         """, (usuario["id"], token, ids["personaje_j1"], ids["personaje_j2"], ids["escenario"]))
+        vincular_reto(conn, usuario["id"], pid)  # el reto de tiempo pendiente se juega en esta partida
     return {"id": pid, "token": token}
 
 
@@ -82,6 +84,7 @@ def finalizar(token: str, datos: PartidaFinIn, request: Request, usuario=Depends
             """, (datos.ganador, datos.duracion_ms, datos.pulsaciones_j1, datos.pulsaciones_j2, motivo, pa["id"]))
             bitacora.registrar(conn, usuario["id"], "partida_invalida", "partidas", pa["id"],
                                nuevo={"motivo": motivo, "duracion_ms": datos.duracion_ms}, ip=ip_de(request))
+            resolver_reto(conn, usuario["id"], pa["id"], datos.ganador, datos.duracion_ms, valida=False)
             resultado_invalido = motivo
         else:
             resultado_invalido = None
@@ -97,13 +100,14 @@ def finalizar(token: str, datos: PartidaFinIn, request: Request, usuario=Depends
                 monedas.mover(conn, usuario["id"], "partida", ganadas,
                               f"Partida #{pa['id']} ({'victoria' if datos.ganador == 'J1' else 'derrota'})", f"P-{pa['id']}")
             nuevos = logros.evaluar(conn, usuario["id"])
+            reto = resolver_reto(conn, usuario["id"], pa["id"], datos.ganador, datos.duracion_ms, valida=True)
 
     if resultado_invalido:
         # Se responde después del COMMIT para que el registro de la partida inválida se conserve
         raise APIError(422, f"Resultado rechazado por el servidor: {resultado_invalido}")
     return {"id": pa["id"], "puntaje": puntaje, "monedas_ganadas": ganadas,
             "limite_diario_alcanzado": ganadas == 0,
-            "saldo": monedas.bloquear_saldo(conn, usuario["id"]), "logros_nuevos": nuevos}
+            "saldo": monedas.bloquear_saldo(conn, usuario["id"]), "logros_nuevos": nuevos, "reto_tiempo": reto}
 
 
 @router.get("", summary="Historial de partidas (propias; el admin ve todas) con filtros y paginación")

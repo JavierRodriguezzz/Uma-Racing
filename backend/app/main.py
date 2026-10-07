@@ -4,6 +4,7 @@ Ejecutar en desarrollo:  uvicorn app.main:app --reload   (desde la carpeta backe
 Documentación interactiva: http://localhost:8000/docs
 """
 import logging
+import threading
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +14,9 @@ from fastapi.staticfiles import StaticFiles
 from . import config
 from .db import conectar, valor
 from .errors import registrar_manejadores
-from .routers import anuncios, auth, compras, items, logros, panel, partidas, perfil, ranking, usuarios
+from .services import simulador
+from .routers import (anuncios, apuestas, auth, compras, gacha, items, logros, monedas, panel, partidas, perfil,
+                      ranking, tiempo, usuarios)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -41,8 +44,24 @@ async def cabeceras_seguridad(request, call_next):
     return respuesta
 
 
+@app.on_event("startup")
+def precalcular_momios():
+    """Los momios salen de 4,000 simulaciones: se calculan al arrancar para que la primera visita sea inmediata."""
+    def tarea():
+        try:
+            conn = conectar()
+            try:
+                simulador.momios(apuestas.corredoras(conn))
+            finally:
+                conn.close()
+        except Exception:  # sin BD al arrancar: se calcularán en la primera petición
+            logging.getLogger("uma.api").warning("No se pudieron precalcular los momios.")
+    threading.Thread(target=tarea, daemon=True).start()
+
+
 registrar_manejadores(app)
-for r in (auth, perfil, items, compras, anuncios, partidas, ranking, logros, usuarios, panel):
+for r in (auth, perfil, items, compras, anuncios, partidas, ranking, logros, usuarios, panel,
+          monedas, tiempo, apuestas, gacha):
     app.include_router(r.router)
 
 

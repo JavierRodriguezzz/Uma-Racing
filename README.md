@@ -94,6 +94,13 @@ mysql -u root -p < database/seed.sql
 
 Para regenerarlos: `python database/generar_seed.py` (limpio) o `python database/generar_seed.py --demo`.
 
+**Reiniciar todo a cero en cualquier momento** (usa la conexión del `.env`):
+
+```bash
+python database/reiniciar_bd.py          # todo en cero
+python database/reiniciar_bd.py --demo   # con datos de demostración
+```
+
 ### Variables de entorno
 
 Copia `.env.example` como `.env` en la raíz y ajusta los valores:
@@ -140,6 +147,8 @@ El juego también funciona en escritorio sin conexión: `python game/main.py`.
 cd backend
 python -m pytest -v
 ```
+
+Las pruebas usan su propia base de datos (`uma_racing_pruebas`), que se recrea al iniciar; nunca modifican `uma_racing`.
 
 ## Usuarios de prueba
 

@@ -200,8 +200,14 @@ IDX_JUNGLE = 3
 # Código de cada personaje en la tienda, en el mismo orden que CHAR_DATA
 CODIGOS_PERSONAJE = ["goldship", "oguricap", "elcondorpasa", "junglepocket"]
 conexion = Conexion()
-desbloqueado = [True] * len(CHAR_DATA)   # sin conexión (escritorio) todo queda disponible, como el original
-precios = [0] * len(CHAR_DATA)
+if EN_NAVEGADOR:
+    # En la web solo las gratuitas están libres hasta que el servidor diga lo contrario
+    # (sin sesión o sin conexión, Condor y Jungle quedan bloqueadas)
+    desbloqueado = [True, True, False, False]
+    precios = [0, 0, 300, 450]
+else:
+    desbloqueado = [True] * len(CHAR_DATA)   # escritorio sin conexión: todo disponible, como el original
+    precios = [0] * len(CHAR_DATA)
 escenario_actual = "clasico"
 
 def make_candado(size=56):

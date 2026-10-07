@@ -85,8 +85,14 @@ mysql -u root -p < database/schema.sql
 mysql -u root -p < database/seed.sql
 ```
 
-`schema.sql` crea la base `uma_racing` desde cero (23 tablas + 1 vista). `seed.sql` carga 60 días de datos de prueba.
-Para regenerar el seed: `python database/generar_seed.py`.
+`schema.sql` crea la base `uma_racing` desde cero (23 tablas + 1 vista). Después carga **uno** de estos archivos:
+
+| Archivo | Contenido |
+|---|---|
+| `seed.sql` | Inicio limpio: catálogo completo y las cuentas de prueba con todo en cero (sin monedas, partidas, compras ni logros; solo las corredoras gratuitas). |
+| `seed_demo.sql` | Lo anterior más 60 días de actividad de 15 jugadores, útil para mostrar reportes y gráficas. |
+
+Para regenerarlos: `python database/generar_seed.py` (limpio) o `python database/generar_seed.py --demo`.
 
 ### Variables de entorno
 
@@ -140,9 +146,9 @@ python -m pytest -v
 | Usuario | Contraseña | Rol | Notas |
 |---|---|---|---|
 | `admin` | `Admin123!` | Administrador | |
-| `jugador1` | `Jugador123!` | Jugador | historial completo, todo desbloqueado |
-| `jugador2` | `Jugador123!` | Jugador | Condor y Jungle bloqueados, 350 monedas |
-| demás jugadores del seed | `Demo1234!` | Jugador | |
+| `jugador1` | `Jugador123!` | Jugador | en `seed.sql` empieza en cero; en `seed_demo.sql` tiene historial y todo desbloqueado |
+| `jugador2` | `Jugador123!` | Jugador | en `seed.sql` empieza en cero; en `seed_demo.sql` tiene 350 monedas y Condor/Jungle bloqueados |
+| demás jugadores de `seed_demo.sql` | `Demo1234!` | Jugador | |
 
 ## Endpoints principales
 

@@ -6,7 +6,10 @@ anuncios vistos, movimientos con saldo consistente y logros obtenidos.
 Las fechas se escriben relativas a NOW() para que las gráficas
 siempre muestren actividad reciente.
 
-Uso:  python database/generar_seed.py   (requiere: pip install bcrypt)
+Uso:
+  python database/generar_seed.py          -> seed.sql: catálogo + cuentas de prueba con TODO en cero
+  python database/generar_seed.py --demo   -> seed_demo.sql: además, 60 días de actividad de ejemplo
+(requiere: pip install bcrypt)
 """
 import random
 import sys
@@ -20,7 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from app.services import gacha, simulador  # noqa: E402
 
 random.seed(2026)
-SALIDA = Path(__file__).with_name("seed.sql")
+DEMO = "--demo" in sys.argv
+SALIDA = Path(__file__).with_name("seed_demo.sql" if DEMO else "seed.sql")
 DIAS = 60
 
 # Reglas iguales a backend/app/services/reglas.py
@@ -161,7 +165,7 @@ def main():
         (3, 2, "jugador2", "jugador2@example.com", "Jugador123!", "Jugador Dos", 2, 0),
     ]
     pw_demo = hash_pw("Demo1234!")
-    for k, (user, nombre) in enumerate(NOMBRES, start=4):
+    for k, (user, nombre) in enumerate(NOMBRES if DEMO else [], start=4):
         usuarios.append((k, 2, user, f"{user.replace('.', '')}@example.com", None, nombre,
                          random.randint(20, DIAS), random.uniform(0.2, 0.9)))
 
@@ -182,6 +186,10 @@ def main():
     rng_sim = random.Random(7)
 
     for uid, rol, user, email, pw, nombre, dias, actividad in usuarios:
+        if not DEMO:
+            # Inicio limpio: cuentas sin monedas, partidas, compras ni logros; solo las corredoras gratuitas
+            perfiles.append((uid, nombre, "", 0, None, None if rol == 1 else ESCENARIO_BASE, 0))
+            continue
         bitacora.append((uid, "registro", "usuarios", uid, None, f"usuario={user}", dias * 86400))
         if rol == 1:
             perfiles.append((uid, nombre, "Cuenta de administración.", 0, None, None, 0))

@@ -64,7 +64,40 @@ ITEMS = [
     (4, 1, "junglepocket", "Jungle Pocket", "Rival feroz que nunca se rinde.", 450, 0, "img/personajes/junglepocket.png"),
     (5, 2, "clasico", "Pradera Clásica", "El escenario original de UmaRacing.", 0, 1, "img/escenarios/clasico.png"),
     (6, 2, "atardecer", "Atardecer", "Escenario de ejemplo: la pradera al caer el sol.", 250, 0, "img/escenarios/atardecer.png"),
+    # ---- Dormitorio: chibis (tipo 3). El código lleva el prefijo chibi_ porque oguricap ya es una corredora.
+    (7, 3, "chibi_silencesuzuka", "Chibi Silence Suzuka", "Introvertida y serena; corre para estar en paz. Exclusiva del gachapón.", 0, 0, "img/chibis/silencesuzuka.png"),
+    (8, 3, "chibi_oguricap", "Chibi Oguri Cap", "Su apetito no tiene fondo y siempre acaba junto a Akebono.", 400, 0, "img/chibis/oguricap.png"),
+    (9, 3, "chibi_hishiakebono", "Chibi Hishi Akebono", "Maternal y alegre: cocina para quien se vea cansada.", 450, 0, "img/chibis/hishiakebono.png"),
+    (10, 3, "chibi_fenomeno", "Chibi Fenomeno", "Disciplinada y formal: patrulla y pone orden.", 250, 0, "img/chibis/fenomeno.png"),
+    (11, 3, "chibi_staygold", "Chibi Stay Gold", "Excéntrica y rebelde: rompe rutinas y hace bromas. Exclusiva del gachapón.", 0, 0, "img/chibis/staygold.png"),
 ]
+# ---- Dormitorio: muebles (tipo 4). Mismo catálogo, precios y huella que frontend/js/dormitorio/datos.js
+# código, nombre, precio, ancho, fondo, pisable
+MUEBLES = [
+    ("sofa_menta", "Sofá menta", 0, 2, 1, 0), ("sofa_magenta", "Sofá neón magenta", 180, 2, 1, 0),
+    ("sofa_noche", "Sofá medianoche", 220, 2, 1, 0),
+    ("cama_simple", "Cama sencilla", 0, 2, 3, 0), ("cama_ficha", "Cama ficha dorada", 300, 2, 3, 0),
+    ("cama_cian", "Cama cian", 300, 2, 3, 0),
+    ("mesa_blanca", "Mesa blanca", 0, 2, 2, 0), ("mesa_madera", "Mesa de madera", 120, 2, 2, 0),
+    ("refri_blanco", "Refrigerador", 150, 1, 1, 0),
+    ("tele_negra", "Televisión", 0, 2, 1, 0), ("tele_arcade", "Televisión retro", 200, 2, 1, 0),
+    ("arcade_uma", "Arcade UmaRacing", 350, 1, 1, 0),
+    ("caminadora", "Caminadora", 250, 1, 2, 0),
+    ("puf_ficha", "Puf amarillo", 60, 1, 1, 0), ("puf_menta", "Puf menta", 60, 1, 1, 0),
+    ("planta", "Planta en maceta", 40, 1, 1, 0),
+    ("lampara_cian", "Lámpara neón", 70, 1, 1, 0),
+    ("estante_trofeos", "Estante de trofeos", 160, 2, 1, 0),
+    ("alfombra_herradura", "Alfombra herradura", 0, 3, 3, 1), ("alfombra_pista", "Alfombra pista", 140, 3, 3, 1),
+]
+PRIMER_MUEBLE = 12
+for k, (codigo, nombre, precio, ancho, fondo, pisable) in enumerate(MUEBLES):
+    ITEMS.append((PRIMER_MUEBLE + k, 4, codigo, nombre, f"Mueble para el dormitorio ({ancho}×{fondo} celdas).",
+                  precio, 1 if precio == 0 else 0, None))
+ATRIBUTOS_MUEBLE = [(PRIMER_MUEBLE + k, m[3], m[4], m[5]) for k, m in enumerate(MUEBLES)]
+SOLO_GACHA = {7, 11}                       # chibis que solo salen en el gachapón
+CHIBIS_TIENDA = [8, 9, 10]
+MUEBLES_PAGO = [i[0] for i in ITEMS if i[1] == 4 and i[5] > 0]
+TIPO_ITEM = {i[0]: i[1] for i in ITEMS}
 PERSONAJES_GRATIS = [1, 2]
 ESCENARIO_BASE = 5
 
@@ -106,6 +139,8 @@ PREMIOS = [
     (4, "Cofre de monedas", "rara", "monedas", None, 200, 3, 0),
     (5, "El Condor Pasa", "epica", "item", 3, None, 1, 250),
     (6, "Jungle Pocket", "epica", "item", 4, None, 1, 250),
+    (7, "Chibi Silence Suzuka", "epica", "item", 7, None, 1, 250),
+    (8, "Chibi Stay Gold", "epica", "item", 11, None, 1, 250),
 ]
 PREMIOS_DICT = [{"id": i, "nombre": n, "rareza": r, "tipo": t, "item_id": it, "monedas": m, "peso": pe, "monedas_repetido": rp}
                 for i, n, r, t, it, m, pe, rp in PREMIOS]
@@ -135,10 +170,15 @@ def main():
     w("  (1, 'administrador', 'Gestiona tienda, anuncios, logros, usuarios y reportes.'),")
     w("  (2, 'jugador', 'Juega, compra en la tienda, mira anuncios y consulta su progreso.');")
     w("")
-    w("INSERT INTO tipos_item (id, codigo, nombre) VALUES (1, 'personaje', 'Personaje'), (2, 'escenario', 'Escenario');")
+    w("INSERT INTO tipos_item (id, codigo, nombre) VALUES (1, 'personaje', 'Personaje'), (2, 'escenario', 'Escenario'),")
+    w("  (3, 'chibi', 'Chibi'), (4, 'mueble', 'Mueble');")
     w("")
-    w("INSERT INTO items (id, tipo_id, codigo, nombre, descripcion, precio, es_gratuito, imagen_url) VALUES")
-    w(",\n".join(f"  ({i}, {t}, {q(c)}, {q(n)}, {q(d)}, {p}, {g}, {q(img)})" for i, t, c, n, d, p, g, img in ITEMS) + ";")
+    w("INSERT INTO items (id, tipo_id, codigo, nombre, descripcion, precio, es_gratuito, solo_gacha, imagen_url) VALUES")
+    w(",\n".join(f"  ({i}, {t}, {q(c)}, {q(n)}, {q(d)}, {p}, {g}, {int(i in SOLO_GACHA)}, {q(img)})"
+                 for i, t, c, n, d, p, g, img in ITEMS) + ";")
+    w("")
+    w("INSERT INTO atributos_mueble (item_id, ancho, fondo, pisable) VALUES")
+    w(",\n".join(f"  ({i}, {a}, {f}, {pi})" for i, a, f, pi in ATRIBUTOS_MUEBLE) + ";")
     w("")
     w("INSERT INTO anuncios (id, titulo, anunciante, descripcion, color, duracion_seg, recompensa_monedas) VALUES")
     w(",\n".join(f"  ({i}, {q(t)}, {q(a)}, {q(d)}, {q(c)}, {s}, {r})" for i, t, a, d, c, s, r in ANUNCIOS) + ";")
@@ -179,7 +219,7 @@ def main():
     w("")
 
     # ---- Simulación de actividad por jugador ----
-    perfiles, partidas, compras, inventario = [], [], [], []
+    perfiles, partidas, compras, inventario, piezas = [], [], [], [], []
     movimientos, visualizaciones, usuario_logros, bitacora = [], [], [], []
     ordenes, sesiones_juego, apuestas, tiradas, resultados = [], [], [], [], []
     partida_id = compra_id = vis_id = orden_id = apuesta_id = tirada_id = 0
@@ -210,6 +250,8 @@ def main():
                 eventos.append((d * 86400 - random.randint(0, 80000), "gacha", None))
             if random.random() < actividad * 0.03:
                 eventos.append((d * 86400 - random.randint(0, 80000), "pago", random.choice(PAQUETES)))
+            if random.random() < actividad * 0.08:
+                eventos.append((d * 86400 - random.randint(0, 80000), "dormitorio", None))
         eventos = [e for e in eventos if e[0] > 60]
         eventos.sort(key=lambda e: -e[0])
 
@@ -217,6 +259,7 @@ def main():
         sin_epica = 0
         poseidos = set(PERSONAJES_GRATIS)
         escenarios = {ESCENARIO_BASE}
+        chibis = set()
         cont = {"partidas_jugadas": 0, "victorias": 0, "anuncios_vistos": 0, "compras": 0, "puntaje_partida": 0}
         obtenidos = set()
 
@@ -293,14 +336,33 @@ def main():
                 tiradas.append((tirada_id, folio, uid, 1, gacha.COSTO_TIRADA, seg))
                 mover("gacha", -gacha.COSTO_TIRADA, folio, "Tirada de gachapón x1", seg)
                 premio, garantia, sin_epica = gacha.tirar(PREMIOS_DICT, sin_epica, rng_sim)
-                repetido = premio["tipo"] == "item" and (premio["item_id"] in poseidos or premio["item_id"] in escenarios)
+                repetido = premio["tipo"] == "item" and premio["item_id"] in (poseidos | escenarios | chibis)
                 otorgadas = premio["monedas_repetido"] if repetido else (premio["monedas"] or 0)
                 resultados.append((tirada_id, premio["id"], premio["rareza"], int(repetido), int(garantia), otorgadas))
                 if premio["tipo"] == "item" and not repetido:
                     inventario.append((uid, premio["item_id"], None, seg, "gacha"))
-                    (escenarios if premio["item_id"] in (5, 6) else poseidos).add(premio["item_id"])
+                    {1: poseidos, 2: escenarios, 3: chibis}[TIPO_ITEM[premio["item_id"]]].add(premio["item_id"])
                 if otorgadas:
                     mover("premio_gacha", otorgadas, folio, f"Gachapón: {premio['nombre']}{' (repetido)' if repetido else ''}", seg)
+            elif tipo == "dormitorio":
+                # Compra en el dormitorio: una chibi de la tienda que no tenga o un mueble (puede repetir)
+                faltan = [c for c in CHIBIS_TIENDA if c not in chibis]
+                iid = random.choice(faltan) if faltan and random.random() < 0.4 else random.choice(MUEBLES_PAGO)
+                item = next(i for i in ITEMS if i[0] == iid)
+                if saldo < item[5]:
+                    continue
+                compra_id += 1
+                folio = f"UMA-{compra_id:06d}"
+                compras.append((compra_id, folio, uid, iid, item[5], seg))
+                if TIPO_ITEM[iid] == 3:
+                    inventario.append((uid, iid, compra_id, seg, "compra"))
+                    chibis.add(iid)
+                else:
+                    piezas.append((uid, iid, compra_id, seg))   # queda guardada en la bandeja
+                mover("compra", -item[5], folio, f"Compra de {item[3]}", seg)
+                bitacora.append((uid, "compra", "compras", folio, None, f"item={item[2]}; precio={item[5]}", seg))
+                cont["compras"] += 1
+                revisar_logros(seg)
             else:
                 aid, titulo, _, _, _, dur_ad, recompensa = datos
                 vis_id += 1
@@ -311,8 +373,8 @@ def main():
 
             # Compra cuando alcanza el saldo (deseo aleatorio)
             for item in ITEMS:
-                iid, _, codigo, inombre, _, precio, gratis, _ = item
-                if gratis or iid in poseidos or iid in escenarios:
+                iid, tipo_item, codigo, inombre, _, precio, gratis, _ = item
+                if tipo_item not in (1, 2) or gratis or iid in poseidos or iid in escenarios:
                     continue
                 if saldo >= precio and random.random() < 0.25:
                     compra_id += 1
@@ -346,6 +408,8 @@ def main():
             [f"  ({c}, {q(f)}, {u}, {i}, {p}, {hace(s)})" for c, f, u, i, p, s in compras])
     bloques("INSERT INTO inventario_usuario (usuario_id, item_id, compra_id, origen, adquirido_en) VALUES",
             [f"  ({u}, {i}, {q(c)}, {q(o)}, {hace(s)})" for u, i, c, s, o in inventario])
+    bloques("INSERT INTO dormitorio_muebles (usuario_id, item_id, compra_id, origen, adquirido_en) VALUES",
+            [f"  ({u}, {i}, {c}, 'compra', {hace(s)})" for u, i, c, s in piezas])
     bloques("INSERT INTO ordenes_pago (id, folio, usuario_id, paquete_id, monedas, monto, estado, referencia_pago, red_tarjeta, creada_en, expira_en, pagada_en) VALUES",
             [f"  ({o}, {q(f)}, {u}, {p}, {m}, {pr}, 'pagada', {q(uuid.UUID(int=random.getrandbits(128)).hex + uuid.UUID(int=random.getrandbits(128)).hex)}, "
              f"{q(random.choice(['VISA', 'MASTERCARD']))}, {hace(s + 40)}, {hace(s - 860)}, {hace(s)})" for o, f, u, p, m, pr, s in ordenes])
@@ -374,7 +438,7 @@ def main():
     SALIDA.write_text("\n".join(sql), encoding="utf-8")
     print(f"seed.sql generado: {len(usuarios)} usuarios, {len(partidas)} partidas, {len(compras)} compras, "
           f"{len(visualizaciones)} anuncios, {len(ordenes)} pagos, {len(apuestas)} apuestas, {len(tiradas)} tiradas, "
-          f"{len(movimientos)} movimientos")
+          f"{len(movimientos)} movimientos, {len(piezas)} muebles")
 
 
 if __name__ == "__main__":

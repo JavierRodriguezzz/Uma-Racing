@@ -38,19 +38,25 @@ def _por_folio(conn, folio):
 @router.post("", status_code=201, summary="Comprar un item (transacción)")
 def comprar(datos: CompraIn, request: Request, usuario=Depends(usuario_actual), conn=Depends(get_db)):
     """INICIO TRANSACCIÓN → bloquear saldo → validar reglas → registrar compra → agregar al inventario
-    → descontar monedas + movimiento → evaluar logros → bitácora → COMMIT (o ROLLBACK si algo falla)."""
+    → descontar monedas + movimiento → evaluar logros → bitácora → COMMIT (o ROLLBACK si algo falla).
+
+    Los muebles del dormitorio se pueden comprar varias veces: cada compra es una pieza nueva
+    (dormitorio_muebles) que queda guardada en la bandeja hasta que el jugador la coloca."""
     if es_admin(usuario):
         raise APIError(403, "Las cuentas de administrador no pueden comprar artículos.")
     with transaccion(conn):
         saldo = monedas.bloquear_saldo(conn, usuario["id"])
-        item = uno(conn, "SELECT id, nombre, codigo, precio, es_gratuito, activo FROM items WHERE id = %s",
-                   (datos.item_id,))
+        item = uno(conn, "SELECT i.id, i.nombre, i.codigo, i.precio, i.es_gratuito, i.solo_gacha, i.activo, t.codigo AS tipo "
+                         "FROM items i JOIN tipos_item t ON t.id = i.tipo_id WHERE i.id = %s", (datos.item_id,))
         if not item or not item["activo"]:
             raise no_encontrado("El artículo no existe o ya no está a la venta.")
         if item["es_gratuito"]:
             raise conflicto("Este artículo es gratuito; ya está disponible para ti.")
-        if uno(conn, "SELECT id FROM inventario_usuario WHERE usuario_id = %s AND item_id = %s",
-               (usuario["id"], item["id"])):
+        if item["solo_gacha"]:
+            raise conflicto("Este artículo no se vende: solo se obtiene en el gachapón.")
+        es_mueble = item["tipo"] == "mueble"
+        if not es_mueble and uno(conn, "SELECT id FROM inventario_usuario WHERE usuario_id = %s AND item_id = %s",
+                                 (usuario["id"], item["id"])):
             raise conflicto("Ya tienes este artículo en tu inventario.")
         if saldo < item["precio"]:
             raise conflicto(f"Saldo insuficiente: tienes {saldo} monedas y el artículo cuesta {item['precio']}.")
@@ -60,8 +66,13 @@ def comprar(datos: CompraIn, request: Request, usuario=Depends(usuario_actual), 
                                 (str(uuid.uuid4())[:24], usuario["id"], item["id"], item["precio"]))
         folio = f"UMA-{compra_id:06d}"
         ejecutar(conn, "UPDATE compras SET folio = %s WHERE id = %s", (folio, compra_id))
-        ejecutar(conn, "INSERT INTO inventario_usuario (usuario_id, item_id, compra_id, origen) VALUES (%s, %s, %s, 'compra')",
-                 (usuario["id"], item["id"], compra_id))
+        pieza_id = None
+        if es_mueble:
+            pieza_id, _ = ejecutar(conn, "INSERT INTO dormitorio_muebles (usuario_id, item_id, compra_id, origen) "
+                                         "VALUES (%s, %s, %s, 'compra')", (usuario["id"], item["id"], compra_id))
+        else:
+            ejecutar(conn, "INSERT INTO inventario_usuario (usuario_id, item_id, compra_id, origen) VALUES (%s, %s, %s, 'compra')",
+                     (usuario["id"], item["id"], compra_id))
         saldo_nuevo = monedas.mover(conn, usuario["id"], "compra", -item["precio"], f"Compra de {item['nombre']}", folio)
         nuevos_logros = logros.evaluar(conn, usuario["id"])
         bitacora.registrar(conn, usuario["id"], "compra", "compras", folio,
@@ -71,13 +82,14 @@ def comprar(datos: CompraIn, request: Request, usuario=Depends(usuario_actual), 
     compra = _por_folio(conn, folio)
     compra["saldo"] = monedas.bloquear_saldo(conn, usuario["id"])
     compra["logros_nuevos"] = nuevos_logros
+    compra["pieza_id"] = pieza_id      # solo en muebles: la pieza nueva del dormitorio
     return compra
 
 
 @router.get("", summary="Historial de compras (propias; el admin ve todas)")
 def listar(q: str | None = Query(None, max_length=60),
            estado: str | None = Query(None, pattern="^(completada|reembolsada)$"),
-           tipo: str | None = Query(None, pattern="^(personaje|escenario)$"),
+           tipo: str | None = Query(None, pattern="^(personaje|escenario|chibi|mueble)$"),
            desde: date | None = None, hasta: date | None = None,
            orden: str | None = None, page: int = Query(1, ge=1), limit: int = Query(15, ge=1, le=100),
            usuario=Depends(usuario_actual), conn=Depends(get_db)):
@@ -110,8 +122,10 @@ def reembolsar(folio: str, datos: ReembolsoIn, request: Request, admin=Depends(s
             raise conflicto("Esta compra ya fue reembolsada.")
         ejecutar(conn, "UPDATE compras SET estado = 'reembolsada', reembolsada_en = NOW(), reembolsada_por = %s, "
                        "motivo_reembolso = %s WHERE id = %s", (admin["id"], datos.motivo, compra["id"]))
+        # El artículo sale del inventario (o la pieza de mueble comprada con este folio sale del dormitorio)
         ejecutar(conn, "DELETE FROM inventario_usuario WHERE usuario_id = %s AND item_id = %s",
                  (compra["usuario_id"], compra["item_id"]))
+        ejecutar(conn, "DELETE FROM dormitorio_muebles WHERE compra_id = %s", (compra["id"],))
         # Si lo tenía equipado o como favorito, vuelve a los valores gratuitos
         ejecutar(conn, """
             UPDATE perfiles SET

@@ -16,7 +16,7 @@
       <div class="tarjeta-titulo"><h2>Personajes y escenarios</h2><button class="btn btn-primario" id="nuevo">+ Nuevo artículo</button></div>
       <form class="filtros" id="filtros">
         <div class="campo buscar"><label for="q">Buscar</label><input id="q" name="q" type="search" maxlength="60" placeholder="Nombre, código o descripción"></div>
-        <div class="campo"><label for="tipo">Tipo</label><select id="tipo" name="tipo"><option value="">Todos</option><option value="personaje">Personaje</option><option value="escenario">Escenario</option></select></div>
+        <div class="campo"><label for="tipo">Tipo</label><select id="tipo" name="tipo"><option value="">Todos</option><option value="personaje">Personaje</option><option value="escenario">Escenario</option><option value="chibi">Chibi</option><option value="mueble">Mueble</option></select></div>
         <div class="campo"><label for="gratuito">Precio</label><select id="gratuito" name="gratuito"><option value="">Todos</option><option value="true">Gratuitos</option><option value="false">De pago</option></select></div>
         <div class="campo"><label for="activo">Estado</label><select id="activo" name="activo"><option value="">Todos</option><option value="true">Activos</option><option value="false">Inactivos</option></select></div>
       </form>
@@ -27,7 +27,7 @@
   <script type="module">
     import { iniciarPagina } from "/js/layout.js";
     import { crud } from "/js/crud.js";
-    import { $, badgeEstado, esc, num } from "/js/ui.js";
+    import { $, TIPOS_ITEM, badgeEstado, esc, num, tipoItem } from "/js/ui.js";
 
     await iniciarPagina();
     const c = crud({
@@ -36,28 +36,30 @@
       columnas: [
         { titulo: "Artículo", orden: "nombre", render: (i) => `<div class="fila" style="flex-wrap:nowrap"><img src="/${esc(i.imagen_url || "img/logo.png")}" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:8px;background:var(--cielo)">
             <div><strong>${esc(i.nombre)}</strong><div class="texto-3" style="font-size:12px"><code>${esc(i.codigo)}</code></div></div></div>` },
-        { titulo: "Tipo", orden: "tipo", render: (i) => (i.tipo === "personaje" ? "Personaje" : "Escenario") },
-        { titulo: "Precio", orden: "precio", clase: "num", render: (i) => (i.es_gratuito ? '<span class="badge info">Gratis</span>' : num(i.precio)) },
+        { titulo: "Tipo", orden: "tipo", render: (i) => tipoItem(i.tipo) },
+        { titulo: "Precio", orden: "precio", clase: "num", render: (i) => (i.es_gratuito ? '<span class="badge info">Gratis</span>' : i.solo_gacha ? '<span class="badge r-epica">Gachapón</span>' : num(i.precio)) },
         { titulo: "Ventas", orden: "ventas", clase: "num", render: (i) => num(i.ventas) },
         { titulo: "Estado", render: (i) => badgeEstado(i.activo) },
       ],
       campos: [
-        { nombre: "tipo", etiqueta: "Tipo", tipo: "select", opciones: [["personaje", "Personaje"], ["escenario", "Escenario"]], requerido: true },
+        { nombre: "tipo", etiqueta: "Tipo", tipo: "select", opciones: Object.entries(TIPOS_ITEM), requerido: true },
         { nombre: "codigo", etiqueta: "Código", requerido: true, maxlength: 40, ayuda: "Minúsculas, números y _. Debe coincidir con la carpeta del juego." },
         { nombre: "nombre", etiqueta: "Nombre", requerido: true, maxlength: 60 },
         { nombre: "precio", etiqueta: "Precio (monedas)", tipo: "number", min: 0, max: 100000, defecto: 100 },
         { nombre: "descripcion", etiqueta: "Descripción", tipo: "textarea", maxlength: 255 },
         { nombre: "imagen_url", etiqueta: "Imagen", maxlength: 255, ayuda: "Ruta dentro del frontend, ej. img/personajes/goldship.png" },
         { nombre: "es_gratuito", etiqueta: "Es gratuito (precio 0)", tipo: "checkbox" },
+        { nombre: "solo_gacha", etiqueta: "Solo en el gachapón (no se vende con monedas)", tipo: "checkbox" },
         { nombre: "activo", etiqueta: "Activo (visible en la tienda)", tipo: "checkbox", defecto: true },
       ],
       validar: (d) => {
         const e = {};
         if (!/^[a-z0-9_]{3,40}$/.test(d.codigo)) e.codigo = "Usa minúsculas, números y guion bajo (3 a 40).";
-        if (!d.es_gratuito && !(d.precio > 0)) e.precio = "Un artículo de pago debe costar más de 0.";
+        if (d.es_gratuito && d.solo_gacha) e.solo_gacha = "No puede ser gratuito y exclusivo del gachapón a la vez.";
+        if (!d.es_gratuito && !d.solo_gacha && !(d.precio > 0)) e.precio = "Un artículo de pago debe costar más de 0.";
         return e;
       },
-      aCuerpo: (d) => ({ ...d, precio: d.es_gratuito ? 0 : d.precio, imagen_url: d.imagen_url || null }),
+      aCuerpo: (d) => ({ ...d, precio: d.es_gratuito || d.solo_gacha ? 0 : d.precio, imagen_url: d.imagen_url || null }),
     });
     $("#nuevo").addEventListener("click", c.nuevo);
   </script>

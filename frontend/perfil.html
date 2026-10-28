@@ -41,7 +41,7 @@
   <script type="module">
     import { get, patch, put } from "/js/api.js";
     import { iniciarPagina } from "/js/layout.js";
-    import { $, cargando, conBoton, datosForm, duracion, error, esc, fecha, limpiarErrores, mostrarErrores, num, toast } from "/js/ui.js";
+    import { $, cargando, conBoton, datosForm, duracion, error, esc, fecha, limpiarErrores, mostrarErrores, num, tipoItem, toast } from "/js/ui.js";
 
     const usuario = await iniciarPagina();
     const esJugador = usuario.rol === "jugador";
@@ -72,7 +72,7 @@
         $("#sec-inventario").hidden = !esJugador;
         $("#inventario").innerHTML = `<div class="tabla-envoltura"><table><thead><tr><th>Artículo</th><th>Tipo</th><th>Origen</th><th>Adquirido</th></tr></thead><tbody>
           ${inv.datos.map((i) => `<tr><td><strong>${esc(i.nombre)}</strong> ${i.equipado ? '<span class="badge exito">Equipado</span>' : ""}</td>
-            <td>${i.tipo === "personaje" ? "Personaje" : "Escenario"}</td><td>${i.origen === "gratuito" ? "Incluido" : esc(i.origen)}</td>
+            <td>${tipoItem(i.tipo)}</td><td>${i.origen === "gratuito" ? "Incluido" : esc(i.origen)}</td>
             <td>${i.adquirido_en ? fecha(i.adquirido_en) : "—"}</td></tr>`).join("")}</tbody></table></div>
           <p style="margin-bottom:0"><a href="/tienda.html">Desbloquear más en la tienda →</a></p>`;
       } catch (e) { error($("#resumen"), e, cargar); }

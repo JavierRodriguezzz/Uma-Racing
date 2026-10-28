@@ -55,8 +55,11 @@ export async function api(metodo, ruta, cuerpo = null, query = null) {
     const err = datos?.error || {};
     if (respuesta.status === 401 && token && !ruta.startsWith("/auth/login")) {
       sesion.limpiar();
-      const volver = encodeURIComponent(location.pathname + location.search);
-      location.href = `/login.html?expirada=1&volver=${volver}`;
+      // dentro del juego (el dormitorio es un iframe) se redirige la página completa, no el marco
+      let ventana = window;
+      try { if (window.top !== window && window.top.location.origin === location.origin) ventana = window.top; } catch { /* otro origen */ }
+      const volver = encodeURIComponent(ventana.location.pathname + ventana.location.search + ventana.location.hash);
+      ventana.location.href = `/login.html?expirada=1&volver=${volver}`;
     }
     throw new ApiError(respuesta.status, err.mensaje || "No fue posible completar la operación.", err.detalles || null);
   }

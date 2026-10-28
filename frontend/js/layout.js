@@ -7,6 +7,7 @@ import { $, $$, confirmar, esc, num, toast } from "./ui.js";
 const I = {
   inicio: '<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
   jugar: '<path d="M6 4l14 8-14 8z"/>',
+  dormitorio: '<path d="M2 19V5M2 15h20v4M22 15v-3a3 3 0 0 0-3-3h-8v6"/><circle cx="6.5" cy="11.5" r="2"/>',
   tienda: '<path d="M4 7h16l-1.5 12a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2zM9 7a3 3 0 0 1 6 0"/>',
   anuncio: '<path d="M3 10v4h4l5 4V6L7 10zM16 8a5 5 0 0 1 0 8M19 5a9 9 0 0 1 0 14"/>',
   ranking: '<path d="M8 21V11H3v10zM15 21V4h-5v17zM21 21v-7h-5v7z"/>',
@@ -29,7 +30,7 @@ export const icono = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="curren
 const NAV = {
   jugador: [
     ["Mi juego", [["dashboard", "Inicio", "/dashboard.html", "inicio"], ["jugar", "Jugar", "/jugar.html", "jugar"],
-      ["tienda", "Tienda", "/tienda.html", "tienda"]]],
+      ["dormitorio", "Dormitorio", "/jugar.html#dormitorio", "dormitorio", true], ["tienda", "Tienda", "/tienda.html", "tienda"]]],
     ["Monedas", [["monedas", "Comprar monedas", "/monedas.html", "moneda"], ["anuncios", "Ver anuncios", "/anuncios.html", "anuncio"],
       ["apuestas", "Apuestas", "/apuestas.html", "apuesta", true], ["gacha", "Gachapón", "/gacha.html", "gacha", true]]],
     ["Competencia", [["ranking", "Ranking", "/ranking.html", "ranking"], ["logros", "Logros", "/logros.html", "logro"],
@@ -59,7 +60,7 @@ export async function iniciarPagina() {
   const b = document.body;
   const roles = (b.dataset.roles || "jugador administrador").split(" ");
   if (!sesion.token()) {
-    location.href = `/login.html?volver=${encodeURIComponent(location.pathname + location.search)}`;
+    location.href = `/login.html?volver=${encodeURIComponent(location.pathname + location.search + location.hash)}`;
     return new Promise(() => {});
   }
   let usuario;

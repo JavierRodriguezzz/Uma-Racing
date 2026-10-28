@@ -1,0 +1,150 @@
+/* Dormitorio 3D: HUD sobre la escena, mismo tema "Arcade nocturno" que el resto del sitio. */
+body.dorm [hidden] { display: none !important; }
+body.dorm { overflow: hidden; height: 100vh; margin: 0; background: var(--noche-0); }
+#escena, #escena canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#escena canvas { touch-action: none; }
+body.dorm.editando #escena canvas { cursor: grab; }
+body.dorm.arrastrando #escena canvas { cursor: grabbing; }
+
+/* ---------- barra superior ---------- */
+.dorm-barra { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px; pointer-events: none; z-index: 5; }
+.dorm-barra > * { pointer-events: auto; }
+.dorm-volver { font-family: var(--fuente-titulo); font-weight: 400; letter-spacing: 1px; transform: skewX(-8deg); }
+.dorm-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px;
+  background: rgba(14, 11, 38, .78); border: 2px solid var(--borde-fuerte); color: var(--texto);
+  font-family: var(--fuente-titulo); font-size: 14px; letter-spacing: .5px; box-shadow: var(--sombra-dura); backdrop-filter: blur(4px); }
+.dorm-chip strong { font-weight: 400; font-size: 17px; color: var(--ficha); }
+.dorm-chip-etq { font-family: var(--fuente); font-size: 12px; font-weight: 600; color: var(--texto-2); letter-spacing: 0; }
+.dorm-chip-ico { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--cian); color: var(--noche-0); font-size: 16px; }
+.dorm-nivel { display: inline-block; padding: 0 6px; border-radius: 4px; background: var(--ficha); color: #241a00; font-size: 12px; }
+.dorm-moneda { color: var(--ficha); text-shadow: 0 0 6px var(--ficha); }
+.dorm-barra #chip-comodidad { margin-left: auto; }
+
+/* ---------- botones hexagonales de esquina ---------- */
+.dorm-acciones { position: fixed; bottom: 16px; display: flex; gap: 10px; z-index: 5; }
+.dorm-acciones.izq { left: 16px; } .dorm-acciones.der { right: 16px; }
+.dorm-hex { width: 78px; height: 84px; display: grid; place-content: center; justify-items: center; gap: 2px; cursor: pointer;
+  border: none; color: var(--texto); font: 600 13px var(--fuente); text-shadow: 0 1px 0 var(--noche-0);
+  background: linear-gradient(160deg, rgba(74, 63, 163, .92), rgba(23, 19, 58, .92));
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); transition: filter .15s, transform .1s; }
+.dorm-hex span { font-size: 24px; line-height: 1; color: var(--ficha); }
+.dorm-hex:hover { filter: brightness(1.2); } .dorm-hex:active { transform: scale(.95); }
+.dorm-hex.activo { background: linear-gradient(160deg, var(--magenta), var(--magenta-osc)); }
+.dorm-hex:focus-visible { outline: 3px solid var(--cian); outline-offset: 2px; }
+
+/* ---------- burbujas de diálogo ---------- */
+#burbujas { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
+.burbuja { position: absolute; transform: translate(-50%, -100%); max-width: 220px; padding: 7px 12px; border-radius: 12px;
+  background: #fff; color: #1b1540; font: 600 13px/1.35 var(--fuente); text-align: center; box-shadow: 3px 3px 0 var(--noche-0);
+  border: 2px solid var(--c, var(--magenta)); animation: burbuja-entra .25s ease-out; }
+.burbuja::after { content: ""; position: absolute; left: 50%; bottom: -9px; margin-left: -7px; border: 7px solid transparent; border-top-color: var(--c, var(--magenta)); border-bottom: 0; }
+.burbuja b { display: block; font: 10px var(--fuente-pixel); color: var(--c, var(--magenta)); letter-spacing: .5px; filter: brightness(.75); }
+.burbuja.sale { animation: burbuja-sale .3s ease-in forwards; }
+@keyframes burbuja-entra { from { opacity: 0; transform: translate(-50%, -80%) scale(.8); } }
+@keyframes burbuja-sale { to { opacity: 0; transform: translate(-50%, -120%); } }
+
+/* ---------- ficha de chibi ---------- */
+.dorm-ficha { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(420px, calc(100vw - 32px)); z-index: 6;
+  padding: 14px 16px; border-radius: var(--radio); background: rgba(23, 19, 58, .95); border: 2px solid var(--c, var(--borde-fuerte));
+  box-shadow: var(--sombra-dura); }
+.dorm-ficha h3 { margin: 0 0 4px; font: 400 18px var(--fuente-titulo); letter-spacing: .5px; color: var(--c); }
+.dorm-ficha p { margin: 6px 0 0; color: var(--texto-2); font-size: 14px; }
+.dorm-ficha .cerrar { position: absolute; top: 6px; right: 6px; }
+
+/* ---------- modo edición ---------- */
+.dorm-edicion { position: fixed; left: 0; right: 0; bottom: 0; z-index: 7; background: rgba(8, 6, 26, .92); border-top: 2px solid var(--cian);
+  padding: 10px 16px 14px; }
+.dorm-edicion-cab { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.dorm-edicion-cab strong { font: 400 15px var(--fuente-titulo); color: var(--cian); letter-spacing: 1px; }
+.dorm-ayuda { color: var(--texto-3); font-size: 13px; }
+.dorm-ayuda kbd { font: 11px var(--fuente-pixel); padding: 1px 5px; border: 1px solid var(--borde-fuerte); border-radius: 3px; color: var(--texto-2); }
+.dorm-sel { display: inline-flex; gap: 8px; }
+#btn-listo { margin-left: auto; }
+.dorm-bandeja { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; min-height: 92px; }
+.dorm-bandeja .vacio { color: var(--texto-3); font-size: 13px; align-self: center; }
+.pieza { flex: 0 0 auto; width: 112px; padding: 8px; border-radius: var(--radio); cursor: pointer; text-align: center;
+  background: var(--noche-2); border: 2px solid var(--borde); color: var(--texto); font: 600 12px/1.25 var(--fuente); }
+.pieza:hover { border-color: var(--cian); }
+.pieza .muestra { height: 40px; border-radius: 4px; margin-bottom: 6px; background: var(--m); box-shadow: inset 0 -8px 0 rgba(0, 0, 0, .25); }
+.pieza .cant { display: block; color: var(--texto-3); font-weight: 500; }
+
+/* ---------- panel lateral ---------- */
+.dorm-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); z-index: 8; display: flex; flex-direction: column;
+  background: var(--noche-1); border-left: 2px solid var(--magenta); box-shadow: -6px 0 0 var(--noche-0); }
+.dorm-panel > header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--borde); }
+.dorm-panel h2 { margin: 0; font: 400 20px var(--fuente-titulo); letter-spacing: 1px; color: var(--magenta); }
+.dorm-panel-cuerpo { overflow-y: auto; padding: 14px 16px 24px; display: grid; gap: 10px; align-content: start; }
+.dorm-panel h3 { margin: 10px 0 0; font: 12px var(--fuente-pixel); color: var(--texto-3); letter-spacing: 1px; text-transform: uppercase; }
+.articulo { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 10px; border-radius: var(--radio);
+  background: var(--noche-2); border: 1px solid var(--borde); }
+.articulo .muestra { width: 64px; height: 64px; border-radius: 6px; background: var(--m); box-shadow: inset 0 -12px 0 rgba(0, 0, 0, .25); }
+.articulo img.muestra { object-fit: cover; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--m) 55%, transparent), var(--noche-3)); box-shadow: none; }
+.articulo.bloqueado img.muestra { filter: grayscale(1) brightness(.35); }
+.articulo .nombre { font-weight: 700; }
+.articulo .detalle { color: var(--texto-3); font-size: 12px; margin-top: 2px; }
+.articulo .lado { display: grid; justify-items: end; gap: 6px; }
+.articulo .precio { font: 400 14px var(--fuente-titulo); color: var(--ficha); }
+
+/* ---------- pantalla de carga ---------- */
+.dorm-carga { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: var(--noche-1); transition: opacity .5s; }
+.dorm-carga.fuera { opacity: 0; pointer-events: none; }
+.dorm-carga-txt { font: 400 18px var(--fuente-titulo); color: var(--cian); letter-spacing: 1px; animation: parpadeo 1.2s steps(2) infinite; }
+.dorm-carga { align-content: center; gap: 12px; }
+.dorm-carga-error { margin: 0; max-width: 420px; padding: 0 16px; text-align: center; color: var(--texto-2); }
+
+/* ---------- dormitorio sin chibis ---------- */
+.dorm-vacio { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4; width: min(340px, calc(100vw - 32px));
+  padding: 14px 18px; border-radius: var(--radio); text-align: center; pointer-events: none;
+  background: rgba(14, 11, 38, .86); border: 2px dashed var(--borde-fuerte); color: var(--texto-2); font-size: 14px; line-height: 1.4; }
+.dorm-vacio strong { display: block; margin-bottom: 4px; font: 400 16px var(--fuente-titulo); letter-spacing: .5px; color: var(--ficha); }
+.dorm-vacio b { color: var(--texto); }
+@keyframes parpadeo { 50% { opacity: .4; } }
+
+@media (max-width: 720px) {
+  .dorm-chip-etq { display: none; }
+  .dorm-hex { width: 62px; height: 68px; font-size: 11px; }
+  .dorm-hex span { font-size: 19px; }
+  .dorm-barra #chip-comodidad { margin-left: 0; }
+}
+/* Dentro del marco del juego (jugar.html) la ventana es más baja: HUD más compacto */
+@media (max-height: 560px) {
+  .dorm-barra { padding: 8px 10px; gap: 8px; }
+  .dorm-chip { padding: 4px 11px; font-size: 13px; }
+  .dorm-chip strong { font-size: 15px; }
+  .dorm-acciones { bottom: 10px; gap: 6px; }
+  .dorm-acciones.izq { left: 10px; } .dorm-acciones.der { right: 10px; }
+  .dorm-hex { width: 64px; height: 70px; font-size: 11px; }
+  .dorm-hex span { font-size: 19px; }
+  .dorm-ficha { bottom: 10px; padding: 10px 14px; }
+  .dorm-vacio { width: min(300px, calc(100vw - 32px)); padding: 7px 12px; font-size: 12px; line-height: 1.3; }
+  .dorm-vacio strong { font-size: 13px; margin-bottom: 2px; }
+}
+@media (prefers-reduced-motion: reduce) { .burbuja, .burbuja.sale, .dorm-carga-txt { animation: none; } }
+
+/* ---------- reloj día/noche ---------- */
+.dorm-reloj { cursor: pointer; font: inherit; font-family: var(--fuente-titulo); }
+.dorm-reloj:hover { border-color: var(--cian); }
+#reloj-ico { color: var(--ficha); font-size: 16px; }
+
+/* ---------- emotes ---------- */
+.emote { position: absolute; transform: translate(-50%, -100%); font-size: 26px; line-height: 1; pointer-events: none;
+  filter: drop-shadow(2px 2px 0 var(--noche-0)); animation: emote-salta .45s ease-out; }
+@keyframes emote-salta { 0% { transform: translate(-50%, -60%) scale(.4); opacity: 0; } 70% { transform: translate(-50%, -110%) scale(1.15); } }
+
+/* ---------- ficha: necesidades en vivo ---------- */
+.ficha-accion { margin-top: 8px; font: 11px var(--fuente-pixel); letter-spacing: .5px; color: var(--cian); }
+.barras { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; margin-top: 8px; }
+.barra { display: grid; grid-template-columns: 62px 1fr 24px; align-items: center; gap: 6px; font-size: 12px; color: var(--texto-2); }
+.barra i, .ia-etiqueta i { display: block; height: 7px; border-radius: 4px; background: var(--noche-0); overflow: hidden; }
+.barra b, .ia-etiqueta b { display: block; height: 100%; width: 50%; background: var(--b); transition: width .25s linear; }
+.barra em { font-style: normal; text-align: right; font-variant-numeric: tabular-nums; color: var(--texto); }
+.ficha-util { margin-top: 8px; font-size: 11px; color: var(--texto-3); line-height: 1.5; }
+.ficha-util .gana { color: var(--ficha); font-weight: 700; }
+
+/* ---------- capa de depuración IA ---------- */
+.ia-etiqueta { position: absolute; transform: translate(-50%, 0); width: 92px; padding: 4px 5px; border-radius: 5px; pointer-events: none;
+  background: rgba(8, 6, 26, .82); border: 1px solid var(--c); display: grid; gap: 2px; }
+.ia-etiqueta strong { font: 9px var(--fuente-pixel); color: var(--c); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ia-etiqueta i { height: 4px; }
+@media (prefers-reduced-motion: reduce) { .emote { animation: none; } }

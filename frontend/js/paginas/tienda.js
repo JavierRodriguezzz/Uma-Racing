@@ -1,6 +1,6 @@
 import { get, patch, post } from "../api.js";
 import { actualizarMonedas, iniciarPagina } from "../layout.js";
-import { $, $$, cargando, celebrarLogros, confirmar, debounce, error, esc, modal, num, paginacion, toast, vacio } from "../ui.js";
+import { $, $$, cargando, celebrarLogros, confirmar, debounce, error, esc, modal, num, paginacion, tipoItem, toast, vacio } from "../ui.js";
 
 const usuario = await iniciarPagina();
 const lista = $("#lista");
@@ -11,7 +11,8 @@ let equipado = null;
 
 function filtros() {
   const f = Object.fromEntries(new FormData($("#filtros")));
-  return { ...f, page: estado.page, limit: estado.limit };
+  // los chibis y muebles se compran dentro del dormitorio
+  return { ...f, seccion: "juego", page: estado.page, limit: estado.limit };
 }
 
 async function cargar() {
@@ -39,7 +40,7 @@ function tarjeta(i) {
       ${bloqueado ? `<div class="candado">${CANDADO}</div>` : ""}
     </button>
     <div class="cuerpo">
-      <div class="fila" style="justify-content:space-between"><h3 style="margin:0">${esc(i.nombre)}</h3><span class="badge info">${i.tipo === "personaje" ? "Personaje" : "Escenario"}</span></div>
+      <div class="fila" style="justify-content:space-between"><h3 style="margin:0">${esc(i.nombre)}</h3><span class="badge info">${tipoItem(i.tipo)}</span></div>
       <p class="texto-2" style="margin:0;font-size:14px">${esc(i.descripcion)}</p>
       <div class="pie"><span class="precio">${i.es_gratuito ? "Gratis" : `${num(i.precio)} 🪙`}</span>${accion}</div>
     </div>
@@ -99,7 +100,7 @@ async function detalle(id) {
       contenido: `<div class="grid" style="grid-template-columns:minmax(0,160px) 1fr;align-items:start">
         <img src="/${esc(i.imagen_url || "img/logo.png")}" alt="" style="border-radius:10px;background:var(--cielo)">
         <div><p>${esc(i.descripcion)}</p>
-          <p><strong>Tipo:</strong> ${i.tipo === "personaje" ? "Personaje" : "Escenario"}<br>
+          <p><strong>Tipo:</strong> ${tipoItem(i.tipo)}<br>
           <strong>Precio:</strong> ${i.es_gratuito ? "Gratis" : `${num(i.precio)} monedas`}<br>
           <strong>Estado:</strong> ${i.poseido ? "En tu inventario" : "Bloqueado"}<br>
           <strong>Jugadores que lo compraron:</strong> ${num(i.ventas)}</p>

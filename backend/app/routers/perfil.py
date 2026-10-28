@@ -21,8 +21,9 @@ ITEMS_DISPONIBLES_SQL = """
     FROM items i
     JOIN tipos_item t ON t.id = i.tipo_id
     LEFT JOIN inventario_usuario inv ON inv.item_id = i.id AND inv.usuario_id = %s
-    WHERE i.activo = 1 AND (i.es_gratuito = 1 OR inv.id IS NOT NULL)
+    WHERE i.activo = 1 AND (i.es_gratuito = 1 OR inv.id IS NOT NULL) AND t.codigo <> 'mueble'
 """
+# (los muebles no están aquí: cada pieza vive en dormitorio_muebles y se consulta en /api/dormitorio)
 
 
 def items_disponibles(conn, usuario_id):

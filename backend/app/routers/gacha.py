@@ -118,8 +118,11 @@ def _premio(conn, pid):
 
 def _validar_premio(conn, d: PremioIn):
     if d.tipo == "item":
-        if not d.item_id or not uno(conn, "SELECT id FROM items WHERE id = %s AND es_gratuito = 0", (d.item_id,)):
-            raise APIError(422, "Elige un artículo de pago existente.", detalles={"item_id": "Artículo no válido."})
+        # RN: los muebles no son premio (se tienen varias piezas y el premio "repetido" no aplica)
+        if not d.item_id or not uno(conn, "SELECT i.id FROM items i JOIN tipos_item t ON t.id = i.tipo_id "
+                                          "WHERE i.id = %s AND i.es_gratuito = 0 AND t.codigo <> 'mueble'", (d.item_id,)):
+            raise APIError(422, "Elige un artículo de pago existente (personaje, escenario o chibi).",
+                           detalles={"item_id": "Artículo no válido."})
         d.monedas = None
     else:
         if not d.monedas:

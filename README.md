@@ -3,7 +3,8 @@
 Videojuego de carreras para 2 jugadores (Python + pygame) que se juega **en el navegador** e incorpora una plataforma web con
 cuentas de usuario, tienda con monedas virtuales, compra de monedas con **Google Pay (modo TEST)**, monedas por **tiempo de
 juego**, **apuestas** (carreras simuladas por el servidor y retos de tiempo), **gachapón** con probabilidades públicas,
-publicidad simulada, ranking, logros, reportes y administración.
+un **dormitorio 3D** con chibis autónomas y muebles (sección del juego, junto a las carreras), publicidad simulada,
+ranking, logros, reportes y administración.
 
 Interfaz "Arcade nocturno" con animaciones de [anime.js](https://animejs.com/).
 
@@ -85,7 +86,7 @@ mysql -u root -p < database/schema.sql
 mysql -u root -p < database/seed.sql
 ```
 
-`schema.sql` crea la base `uma_racing` desde cero (23 tablas + 1 vista). Después carga **uno** de estos archivos:
+`schema.sql` crea la base `uma_racing` desde cero (26 tablas + 1 vista). Después carga **uno** de estos archivos:
 
 | Archivo | Contenido |
 |---|---|
@@ -93,6 +94,10 @@ mysql -u root -p < database/seed.sql
 | `seed_demo.sql` | Lo anterior más 60 días de actividad de 15 jugadores, útil para mostrar reportes y gráficas. |
 
 Para regenerarlos: `python database/generar_seed.py` (limpio) o `python database/generar_seed.py --demo`.
+
+> **Si ya tenías la base creada**, vuelve a cargar `schema.sql` y un seed (o usa `reiniciar_bd.py`): el dormitorio agregó
+> las tablas `dormitorios`, `dormitorio_muebles` y `atributos_mueble`, la columna `items.solo_gacha` y los tipos de
+> artículo `chibi` y `mueble`.
 
 **Reiniciar todo a cero en cualquier momento** (usa la conexión del `.env`):
 
@@ -170,6 +175,8 @@ Las pruebas usan su propia base de datos (`uma_racing_pruebas`), que se recrea a
 | POST / PUT / PATCH / DELETE | `/api/items[/{id}]` | CRUD de artículos | Administrador |
 | POST | `/api/compras` | Comprar un artículo (transacción) | Jugador |
 | POST | `/api/compras/{folio}/reembolso` | Reembolsar (transacción) | Administrador |
+| GET | `/api/dormitorio` | Dormitorio: monedas, catálogo, chibis y muebles (se crea la primera vez) | Jugador |
+| PUT | `/api/dormitorio/acomodo` | Guardar dónde está cada mueble (validado por el servidor) | Jugador |
 | POST | `/api/anuncios/{id}/ver` · `/api/anuncios/visualizaciones/{token}/completar` | Ver anuncio y reclamar recompensa | Jugador |
 | POST | `/api/partidas` · `/api/partidas/{token}/finalizar` | Registrar partida (validada por el servidor) | Jugador |
 | GET | `/api/ranking` | Ranking por periodo y criterio | Autenticado |
@@ -197,6 +204,12 @@ La lista completa, con parámetros, cuerpos y respuestas, está en `/docs` (Open
   servidor; los momios salen de 4,000 simulaciones con 8 % de margen. El reto de tiempo se resuelve con tu siguiente partida.
 - **Gachapón:** 100 monedas (×10: 900). Común 75 %, rara 22 %, épica 3 %; épica garantizada a las 30 tiradas sin épica;
   los repetidos se compensan con monedas.
+- **Dormitorio:** sección de **Jugar** (pestaña *Dormitorio*, `/jugar.html#dormitorio` o <kbd>TAB</kbd> en la selección de
+  corredoras). Al abrirlo por primera vez trae los 5 muebles gratuitos acomodados. Las chibis y los muebles se compran con
+  `POST /api/compras` (mismo folio, logros y reembolsos que la tienda); un mueble se puede tener varias veces y cada pieza
+  queda guardada hasta colocarla. Silence Suzuka y Stay Gold son exclusivas del gachapón (`solo_gacha`). El servidor
+  rechaza acomodos con piezas ajenas, fuera del cuarto (12 × 9 celdas) o encimadas (las alfombras solo chocan con alfombras).
+  Detalles de la IA de las chibis en [docs/dormitorio_ia.md](docs/dormitorio_ia.md).
 
 Todas las monedas son virtuales y no tienen valor monetario.
 

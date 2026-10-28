@@ -9,6 +9,9 @@ CREATE DATABASE IF NOT EXISTS uma_racing
 USE uma_racing;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS atributos_mueble;
+DROP TABLE IF EXISTS dormitorio_muebles;
+DROP TABLE IF EXISTS dormitorios;
 DROP TABLE IF EXISTS gacha_resultados;
 DROP TABLE IF EXISTS gacha_tiradas;
 DROP TABLE IF EXISTS gacha_premios;
@@ -87,7 +90,7 @@ CREATE TABLE sesiones (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
--- 4. TIPOS DE ITEM (catálogo: personaje, escenario)
+-- 4. TIPOS DE ITEM (catálogo: personaje, escenario, chibi y mueble del dormitorio)
 -- ---------------------------------------------------------------------
 CREATE TABLE tipos_item (
     id     TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -98,8 +101,9 @@ CREATE TABLE tipos_item (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
--- 5. ITEMS (productos de la tienda: personajes y escenarios)
---    `codigo` es el identificador que usa el juego para cargar sus assets.
+-- 5. ITEMS (productos de la tienda: personajes, escenarios, chibis y muebles)
+--    `codigo` es el identificador que usa el juego (o el dormitorio) para cargar sus assets.
+--    `solo_gacha`: no se vende con monedas; solo sale como premio del gachapón.
 -- ---------------------------------------------------------------------
 CREATE TABLE items (
     id             INT UNSIGNED     NOT NULL AUTO_INCREMENT,
@@ -109,6 +113,7 @@ CREATE TABLE items (
     descripcion    VARCHAR(255)     NOT NULL DEFAULT '',
     precio         INT UNSIGNED     NOT NULL DEFAULT 0,
     es_gratuito    TINYINT(1)       NOT NULL DEFAULT 0,
+    solo_gacha     TINYINT(1)       NOT NULL DEFAULT 0,
     imagen_url     VARCHAR(255)     NULL,
     activo         TINYINT(1)       NOT NULL DEFAULT 1,
     creado_en      DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -117,7 +122,9 @@ CREATE TABLE items (
     CONSTRAINT uq_items_codigo UNIQUE (codigo),
     CONSTRAINT fk_items_tipo FOREIGN KEY (tipo_id) REFERENCES tipos_item (id),
     CONSTRAINT ck_items_precio   CHECK (precio <= 100000),
-    CONSTRAINT ck_items_gratuito CHECK ((es_gratuito = 1 AND precio = 0) OR (es_gratuito = 0 AND precio > 0)),
+    CONSTRAINT ck_items_gratuito CHECK ((es_gratuito = 1 AND solo_gacha = 0 AND precio = 0) OR
+                                        (es_gratuito = 0 AND solo_gacha = 0 AND precio > 0) OR
+                                        (es_gratuito = 0 AND solo_gacha = 1 AND precio = 0)),
     INDEX ix_items_tipo (tipo_id, activo)
 ) ENGINE=InnoDB;
 
@@ -483,6 +490,58 @@ CREATE TABLE gacha_resultados (
     CONSTRAINT fk_gacha_resultados_tirada FOREIGN KEY (tirada_id) REFERENCES gacha_tiradas (id),
     CONSTRAINT fk_gacha_resultados_premio FOREIGN KEY (premio_id) REFERENCES gacha_premios (id),
     INDEX ix_gacha_resultados_rareza (rareza)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 24. DORMITORIOS (uno por jugador; se crea la primera vez que lo abre,
+--     con los muebles gratuitos ya acomodados)
+-- ---------------------------------------------------------------------
+CREATE TABLE dormitorios (
+    usuario_id     INT UNSIGNED NOT NULL,
+    nombre         VARCHAR(40)  NOT NULL DEFAULT 'Dormitorio de Tracen',
+    creado_en      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (usuario_id),
+    CONSTRAINT fk_dormitorios_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 25. MUEBLES DEL DORMITORIO (cada pieza es una fila: se pueden tener varias del mismo artículo)
+--     x, z = celda de la esquina superior izquierda; rot = cuartos de vuelta (0 a 3).
+--     Sin posición (NULL) la pieza está guardada en la bandeja.
+-- ---------------------------------------------------------------------
+CREATE TABLE dormitorio_muebles (
+    id           INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    usuario_id   INT UNSIGNED     NOT NULL,
+    item_id      INT UNSIGNED     NOT NULL,
+    compra_id    INT UNSIGNED     NULL,
+    origen       ENUM('inicial', 'compra', 'regalo') NOT NULL DEFAULT 'compra',
+    x            TINYINT UNSIGNED NULL,
+    z            TINYINT UNSIGNED NULL,
+    rot          TINYINT UNSIGNED NULL,
+    adquirido_en DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT uq_dormitorio_muebles_compra UNIQUE (compra_id),
+    CONSTRAINT fk_dormitorio_muebles_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+    CONSTRAINT fk_dormitorio_muebles_item    FOREIGN KEY (item_id)    REFERENCES items (id),
+    CONSTRAINT fk_dormitorio_muebles_compra  FOREIGN KEY (compra_id)  REFERENCES compras (id),
+    CONSTRAINT ck_dormitorio_muebles_posicion CHECK ((x IS NULL AND z IS NULL AND rot IS NULL) OR
+                                                     (x IS NOT NULL AND z IS NOT NULL AND rot BETWEEN 0 AND 3)),
+    INDEX ix_dormitorio_muebles_usuario (usuario_id)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 26. ATRIBUTOS DE MUEBLE (huella en la cuadrícula; el servidor valida el acomodo con ella)
+--     Deben coincidir con `tam` y `pisable` de frontend/js/dormitorio/datos.js
+-- ---------------------------------------------------------------------
+CREATE TABLE atributos_mueble (
+    item_id INT UNSIGNED     NOT NULL,
+    ancho   TINYINT UNSIGNED NOT NULL,
+    fondo   TINYINT UNSIGNED NOT NULL,
+    pisable TINYINT(1)       NOT NULL DEFAULT 0,
+    PRIMARY KEY (item_id),
+    CONSTRAINT fk_atributos_mueble_item FOREIGN KEY (item_id) REFERENCES items (id),
+    CONSTRAINT ck_atributos_mueble CHECK (ancho BETWEEN 1 AND 6 AND fondo BETWEEN 1 AND 6 AND pisable IN (0, 1))
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------

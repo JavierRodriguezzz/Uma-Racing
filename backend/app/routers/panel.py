@@ -52,12 +52,18 @@ def _dashboard_admin(conn):
                             "AND iniciada_en >= NOW() - INTERVAL 1 DAY")
     if invalidas:
         alertas.append({"nivel": "advertencia", "mensaje": f"{invalidas} partida(s) rechazadas por resultado sospechoso en las últimas 24 h."})
+    # (los exclusivos del gachapón no se venden; los muebles del dormitorio se resumen en una sola alerta)
     sin_ventas = todos(conn, """
-        SELECT i.nombre FROM items i WHERE i.activo = 1 AND i.es_gratuito = 0
+        SELECT i.nombre, t.codigo AS tipo FROM items i JOIN tipos_item t ON t.id = i.tipo_id
+        WHERE i.activo = 1 AND i.es_gratuito = 0 AND i.solo_gacha = 0
           AND NOT EXISTS (SELECT 1 FROM compras c WHERE c.item_id = i.id AND c.creada_en >= NOW() - INTERVAL 30 DAY)
     """)
     for s in sin_ventas:
-        alertas.append({"nivel": "info", "mensaje": f"'{s['nombre']}' no tiene ventas en los últimos 30 días."})
+        if s["tipo"] != "mueble":
+            alertas.append({"nivel": "info", "mensaje": f"'{s['nombre']}' no tiene ventas en los últimos 30 días."})
+    muebles_sin_ventas = sum(s["tipo"] == "mueble" for s in sin_ventas)
+    if muebles_sin_ventas:
+        alertas.append({"nivel": "info", "mensaje": f"{muebles_sin_ventas} mueble(s) del dormitorio sin ventas en los últimos 30 días."})
     if not valor(conn, "SELECT COUNT(*) FROM anuncios WHERE activo = 1"):
         alertas.append({"nivel": "advertencia", "mensaje": "No hay anuncios activos: los jugadores no pueden ganar monedas viendo publicidad."})
     return {"rol": "administrador", "tarjetas": tarjetas, "partidas_7d": partidas_7d,
@@ -99,7 +105,8 @@ def _dashboard_jugador(conn, usuario):
         GROUP BY DATE(iniciada_en) ORDER BY dia
     """, (uid,))
     bloqueados = valor(conn, """
-        SELECT COUNT(*) FROM items i WHERE i.activo = 1 AND i.es_gratuito = 0
+        SELECT COUNT(*) FROM items i JOIN tipos_item t ON t.id = i.tipo_id
+        WHERE i.activo = 1 AND i.es_gratuito = 0 AND t.codigo IN ('personaje', 'escenario')   -- los de la tienda del juego
           AND NOT EXISTS (SELECT 1 FROM inventario_usuario v WHERE v.item_id = i.id AND v.usuario_id = %s)
     """, (uid,))
     return {"rol": "jugador", "tarjetas": tarjetas, "ultimas_partidas": ultimas, "partidas_7d": partidas_7d,

@@ -16,6 +16,9 @@ export const fechaHora = (v) => (v ? new Date(v).toLocaleString("es-MX", { day: 
 export const diaCorto = (v) => new Date(v + "T00:00:00").toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
 export const duracion = (ms) => (ms == null ? "—" : `${(ms / 1000).toFixed(2)} s`);
 export const monedas = (n) => `${num(n)} 🪙`;
+// Tipos de artículo de la tienda (los dos últimos son del dormitorio)
+export const TIPOS_ITEM = { personaje: "Personaje", escenario: "Escenario", chibi: "Chibi", mueble: "Mueble" };
+export const tipoItem = (t) => TIPOS_ITEM[t] || t;
 // Fecha local AAAA-MM-DD (toISOString usaría UTC y en la noche de México ya sería "mañana")
 const isoLocal = (f) => `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, "0")}-${String(f.getDate()).padStart(2, "0")}`;
 export const hoyISO = () => isoLocal(new Date());

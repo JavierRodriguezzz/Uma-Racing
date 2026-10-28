@@ -389,6 +389,41 @@ def draw_text_shadow(surface, font, text, color, x, y, shadow_col=COL_BLACK, off
     surface.blit(shd, (x + offset, y + offset))
     surface.blit(txt, (x, y))
 
+# ---- UMARACING ONLINE: secciones de la interfaz del juego (Carreras / Dormitorio) ----
+# En jugar.html la carrera y el dormitorio comparten el marco. Mientras se ve el dormitorio
+# la carrera queda en pausa: no avanza, no suena y descarta las teclas.
+ms_en_pausa = 0   # total de ms en pausa: no cuentan en la duración de la carrera
+t_reanudado = 0   # cuándo se volvió a la carrera (los clics de ese instante se ignoran)
+# Arriba a la derecha: en esa zona el dormitorio no tiene botones, así un doble clic en su
+# botón "Carreras" (arriba a la izquierda) no regresa al dormitorio por accidente
+btn_dormitorio = pygame.Rect(WIDTH - 270, 18, 250, 46)
+font_boton = load_pixel_font(22)
+
+async def ceder():
+    """Cede el control al navegador (pygbag) y espera aquí mientras el jugador está en otra sección."""
+    global ms_en_pausa, t_reanudado
+    await asyncio.sleep(0)
+    if conexion.seccion() == "carreras":
+        return
+    inicio = pygame.time.get_ticks()
+    pygame.mixer.pause()
+    while conexion.seccion() != "carreras":
+        pygame.event.clear()
+        await asyncio.sleep(0.1)
+    pygame.mixer.unpause()
+    pygame.event.clear()
+    clock.tick()   # el siguiente frame no cuenta el tiempo en pausa
+    t_reanudado = pygame.time.get_ticks()
+    ms_en_pausa += t_reanudado - inicio
+
+def draw_boton_dormitorio(surface, mouse_pos):
+    if not conexion.en_linea:
+        return
+    draw_button(btn_dormitorio, (150, 60, 170), (80, 30, 100), "",
+                highlighted=btn_dormitorio.collidepoint(mouse_pos))
+    draw_text_shadow(surface, font_boton, "DORMITORIO  [TAB]", COL_WHITE, btn_dormitorio.centerx,
+                     btn_dormitorio.centery - font_boton.get_height() // 2, offset=2, center=True)
+
 async def main():
     # ---- UmaRacing Online: personajes desbloqueados y escenario equipado del jugador ----
     if conexion.en_linea:
@@ -463,6 +498,14 @@ async def main():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit(); sys.exit()
+                    # UmaRacing Online: TAB o clic en el botón abre la sección del dormitorio
+                    if conexion.en_linea and (
+                            (event.type == pygame.KEYDOWN and event.key == pygame.K_TAB) or
+                            (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+                             and btn_dormitorio.collidepoint(event.pos)
+                             and pygame.time.get_ticks() - t_reanudado > 500)):
+                        conexion.abrir_seccion("dormitorio")
+                        continue
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_F11:
                             toggle_fullscreen()
@@ -584,10 +627,11 @@ async def main():
                                  COL_P1, WIDTH // 2 - 10, HEIGHT - 44, offset=1, center=True)
                 draw_text_shadow(screen, font_tiny, "J2: FLECHAS mover  ARRIBA confirmar",
                                  COL_P2, WIDTH // 2 - 10, HEIGHT - 26, offset=1, center=True)
+                draw_boton_dormitorio(screen, pygame.mouse.get_pos())
 
                 pygame.display.flip()
                 clock.tick(60)
-                await asyncio.sleep(0)  # cede el control al navegador (pygbag)
+                await ceder()  # cede el control al navegador (pygbag); en pausa si se ve el dormitorio
 
             run_p1, static_p1, cry_p1, win_p1 = CHAR_DATA[sel_p1]["sprites"]
             run_p2, static_p2, cry_p2, win_p2 = CHAR_DATA[sel_p2]["sprites"]
@@ -694,7 +738,7 @@ async def main():
 
                 pygame.display.flip()
                 clock.tick(30)
-                await asyncio.sleep(0)  # cede el control al navegador (pygbag)
+                await ceder()  # cede el control al navegador (pygbag); en pausa si se ve el dormitorio
 
         # Elegir música de carrera aleatoriamente y arrancarla
         current_carrera = random.choice([1, 2])
@@ -707,11 +751,12 @@ async def main():
         game_state = "race"
         post_action = None
         t_carrera = pygame.time.get_ticks()  # UmaRacing Online: duración de la carrera
+        pausa_al_iniciar = ms_en_pausa       # (sin el tiempo que el juego pase en pausa)
 
         # ====================== LOOP DE CARRERA ======================
         while post_action is None:
             clock.tick(60)
-            await asyncio.sleep(0)  # cede el control al navegador (pygbag)
+            await ceder()  # cede el control al navegador (pygbag); en pausa si se ve el dormitorio
             mouse_pos = pygame.mouse.get_pos()
 
             for event in pygame.event.get():
@@ -803,7 +848,7 @@ async def main():
                     if partida_token:
                         id_final = conexion.enviar("POST", f"/partidas/{partida_token}/finalizar", {
                             "ganador": "J1" if winner == "Jugador 1" else "J2",
-                            "duracion_ms": pygame.time.get_ticks() - t_carrera,
+                            "duracion_ms": pygame.time.get_ticks() - t_carrera - (ms_en_pausa - pausa_al_iniciar),
                             "pulsaciones_j1": taps1,
                             "pulsaciones_j2": taps2,
                         })

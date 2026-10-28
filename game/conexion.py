@@ -5,6 +5,9 @@ window.umaBridge, que hace las peticiones a la API con la sesión del usuario;
 el juego solo envía la petición y revisa cada frame si ya llegó la respuesta,
 así nunca se congela la animación.
 
+jugar.html también tiene la sección del dormitorio: el puente indica qué sección
+se ve (el juego se pausa fuera de "carreras") y permite abrir el dormitorio.
+
 En escritorio no hay puente: el juego funciona sin conexión, como el original.
 """
 import asyncio
@@ -30,6 +33,20 @@ class Conexion:
     @property
     def en_linea(self):
         return self.puente is not None
+
+    def seccion(self):
+        """Sección visible en jugar.html: "carreras" o "dormitorio". Sin puente siempre es "carreras"."""
+        if not self.en_linea:
+            return "carreras"
+        try:
+            return str(self.puente.seccion or "carreras")
+        except Exception:
+            return "carreras"
+
+    def abrir_seccion(self, nombre):
+        """Pide a la página mostrar otra sección de la interfaz del juego (por ejemplo, el dormitorio)."""
+        if self.en_linea:
+            self.puente.abrir(nombre)
 
     def enviar(self, metodo, ruta, cuerpo=None):
         """Inicia una petición y devuelve su id (o None si no hay conexión)."""

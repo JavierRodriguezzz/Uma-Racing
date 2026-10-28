@@ -79,13 +79,17 @@ class PasswordIn(_Base):
 
 
 # ---------- Tienda ----------
+TIPOS_ITEM = ("personaje", "escenario", "chibi", "mueble")
+
+
 class ItemIn(_Base):
-    tipo: Literal["personaje", "escenario"]
+    tipo: Literal["personaje", "escenario", "chibi", "mueble"]
     codigo: str = Field(min_length=3, max_length=40)
     nombre: str = Field(min_length=2, max_length=60)
     descripcion: str = Field(default="", max_length=255)
     precio: int = Field(ge=0, le=100000)
     es_gratuito: bool = False
+    solo_gacha: bool = False          # no se vende con monedas: solo sale en el gachapón
     imagen_url: str | None = Field(default=None, max_length=255)
     activo: bool = True
 
@@ -287,6 +291,19 @@ class ApuestaTiempoIn(_Base):
 # ---------- Gachapón ----------
 class TiradaIn(_Base):
     cantidad: Literal[1, 10]
+
+
+# ---------- Dormitorio ----------
+class PiezaIn(_Base):
+    id: int = Field(gt=0)                 # pieza (fila de dormitorio_muebles)
+    x: int = Field(ge=0, le=50)           # celda de la esquina superior izquierda
+    z: int = Field(ge=0, le=50)
+    rot: int = Field(ge=0, le=3)          # cuartos de vuelta
+
+
+class AcomodoIn(_Base):
+    """Piezas colocadas en el cuarto; las que no vienen aquí quedan guardadas en la bandeja."""
+    piezas: list[PiezaIn] = Field(max_length=200)
 
 
 class PremioIn(_Base):

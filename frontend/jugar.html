@@ -12,7 +12,8 @@
 </head>
 <body data-pagina="jugar" data-titulo="Jugar" data-roles="jugador">
   <main class="contenido pila" id="contenido" hidden>
-    <div class="alerta info" id="aviso">Cuando termine de cargar, presiona <strong>▶ PRESS START</strong> dentro del juego para activar el sonido y el teclado.</div>
+    <div class="alerta info" data-solo="carreras">Cuando termine de cargar, presiona <strong>▶ PRESS START</strong> dentro del juego para activar el sonido y el teclado.</div>
+    <div class="alerta info" data-solo="dormitorio" hidden>Tus chibis y muebles se guardan en tu cuenta y se compran con tus monedas. <strong>Silence Suzuka</strong> y <strong>Stay Gold</strong> solo salen en el <a href="/gacha.html">gachapón</a>.</div>
     <div class="grid grid-2">
       <div class="tarjeta fila" style="justify-content:space-between;padding:12px 16px">
         <div><div class="pixel texto-2" style="font-size:10px">TIEMPO DE JUEGO ACTIVO</div>
@@ -25,17 +26,23 @@
         <a class="btn btn-sm btn-primario" href="/apuestas.html#tiempo" id="reto-btn">Crear reto</a>
       </div>
     </div>
-    <div class="marco-juego" id="marco">
-      <div class="estado" id="cargando-juego" style="color:#fff;position:absolute;inset:0;display:grid;place-content:center">
-        <div class="icono">🏇</div><h3 style="color:#fff">Preparando la pista…</h3></div>
+
+    <!-- Secciones del juego: la carrera (pygame) y el dormitorio (3D) comparten el mismo marco -->
+    <div class="pestanas secciones-juego" role="tablist" aria-label="Secciones del juego">
+      <button type="button" role="tab" id="tab-carreras" data-seccion="carreras" aria-selected="true" aria-controls="marco">🏁 Carreras</button>
+      <button type="button" role="tab" id="tab-dormitorio" data-seccion="dormitorio" aria-selected="false" aria-controls="marco">🏠 Dormitorio</button>
+    </div>
+    <div class="marco-juego" id="marco" role="tabpanel">
+      <div class="estado marco-carga" id="cargando-juego"><div class="icono">🏇</div><h3>Preparando la pista…</h3></div>
     </div>
     <div class="fila">
-      <button class="btn" id="pantalla-completa">⛶ Pantalla completa</button>
-      <button class="btn" id="reiniciar">↻ Recargar juego</button>
+      <button class="btn" id="pantalla-completa" type="button">⛶ Pantalla completa</button>
+      <button class="btn" id="reiniciar" type="button">↻ Recargar juego</button>
       <span class="espaciador"></span>
-      <a class="btn btn-oro" href="/tienda.html">Desbloquear corredoras</a>
+      <a class="btn btn-oro" href="/tienda.html" data-solo="carreras">Desbloquear corredoras</a>
     </div>
-    <section class="controles">
+
+    <section class="controles" data-solo="carreras">
       <div class="tarjeta"><h3 style="color:var(--pasto)">Jugador 1 — tú</h3>
         <p style="margin:0">Elegir: <kbd>A</kbd> <kbd>D</kbd> · Confirmar: <kbd>W</kbd><br>Correr: alterna <kbd>A</kbd> y <kbd>D</kbd> lo más rápido que puedas.</p>
         <p class="texto-2" style="margin:6px 0 0;font-size:14px">Tus partidas, monedas y logros se guardan en tu cuenta.</p></div>
@@ -44,13 +51,33 @@
         <p class="texto-2" style="margin:6px 0 0;font-size:14px">Puede usar las corredoras gratuitas y las que tú hayas desbloqueado.</p></div>
       <div class="tarjeta"><h3>Recompensas</h3>
         <p style="margin:0">Victoria: <strong>20 monedas</strong> · Derrota: <strong>5</strong><br>Puntaje: 500 + bono por rapidez al ganar.</p>
-        <p class="texto-2" style="margin:6px 0 0;font-size:14px">El servidor valida cada resultado; las carreras imposibles se rechazan.</p></div>
+        <p class="texto-2" style="margin:6px 0 0;font-size:14px">El servidor valida cada resultado; las carreras imposibles se rechazan. En la selección de corredoras, <kbd>TAB</kbd> abre el dormitorio.</p></div>
+    </section>
+    <section class="controles" data-solo="dormitorio" hidden>
+      <div class="tarjeta"><h3 style="color:var(--cian)">Explorar</h3>
+        <p style="margin:0">Arrastra para girar la cámara y usa la rueda para acercarte. <strong>Vista</strong> cambia de ángulo.</p>
+        <p class="texto-2" style="margin:6px 0 0;font-size:14px">Haz clic en una chibi para ver sus necesidades y lo que está haciendo.</p></div>
+      <div class="tarjeta"><h3 style="color:var(--magenta)">Decorar</h3>
+        <p style="margin:0"><strong>Editar</strong>: arrastra un mueble para moverlo · <kbd>R</kbd> rota · <kbd>Supr</kbd> lo guarda.</p>
+        <p class="texto-2" style="margin:6px 0 0;font-size:14px">En la <strong>Tienda</strong> compras muebles y en <strong>Chibis</strong> consigues nuevas habitantes.</p></div>
+      <div class="tarjeta"><h3>Día y noche</h3>
+        <p style="margin:0">Haz clic en el reloj para acelerar el tiempo (×1, ×4, ×12, ×30).</p>
+        <p class="texto-2" style="margin:6px 0 0;font-size:14px">Mientras estás en el dormitorio la carrera queda en pausa, y al revés.</p></div>
     </section>
   </main>
   <script type="module">
     import { api } from "/js/api.js";
     import { actualizarMonedas, iniciarPagina } from "/js/layout.js";
-    import { $, celebrarLogros, toast } from "/js/ui.js";
+    import { $, $$, celebrarLogros, toast } from "/js/ui.js";
+
+    // ---- Secciones de la interfaz del juego. Cada una vive en su propio iframe dentro del marco.
+    const SECCIONES = {
+      carreras:   { titulo: "Jugar",      src: "/juego/index.html",            nombre: "UmaRacing",            icono: "🏇", carga: "Preparando la pista…",      recargar: "↻ Recargar juego" },
+      dormitorio: { titulo: "Dormitorio", src: "/dormitorio.html?embebido=1", nombre: "Dormitorio UmaRacing", icono: "🏠", carga: "Preparando el dormitorio…", recargar: "↻ Recargar dormitorio" },
+    };
+    const seccionDeHash = () => (location.hash === "#dormitorio" ? "dormitorio" : "carreras");
+    // la barra lateral marca "Dormitorio" o "Jugar" según la sección con la que se abre la página
+    if (seccionDeHash() === "dormitorio") Object.assign(document.body.dataset, { pagina: "dormitorio", titulo: "Dormitorio" });
 
     await iniciarPagina();
 
@@ -58,6 +85,8 @@
     const PERMITIDAS = [/^GET \/juego\/config$/, /^POST \/partidas$/, /^POST \/partidas\/[0-9a-f-]{36}\/finalizar$/];
     window.umaBridge = {
       resultados: {},
+      seccion: "carreras",          // el juego la revisa cada frame: fuera de "carreras" se pone en pausa
+      abrir(nombre) { if (SECCIONES[nombre]) abrirSeccion(String(nombre)); },
       pedir(id, metodo, ruta, cuerpoJson) {
         const firma = `${metodo} ${ruta}`;
         if (!PERMITIDAS.some((r) => r.test(firma))) {
@@ -92,26 +121,112 @@
     };
 
     const marco = $("#marco");
-    function cargarJuego() {
-      marco.querySelector("iframe")?.remove();
-      $("#cargando-juego").hidden = false;
+    const marcos = {};    // sección → iframe (se crea la primera vez que se abre)
+    const listos = {};    // sección → ya terminó de cargar su página
+    let seccion = null;
+
+    function crearMarco(s) {
+      marcos[s]?.remove();
+      listos[s] = false;
       const f = document.createElement("iframe");
-      f.src = "/juego/index.html";
-      f.title = "UmaRacing";
+      f.src = SECCIONES[s].src;
+      f.title = SECCIONES[s].nombre;
       f.allow = "autoplay; fullscreen";
+      f.dataset.seccion = s;
       f.addEventListener("load", () => {
-        $("#cargando-juego").hidden = true;
-        // La página de pygbag es del mismo origen: se ocultan sus barras de desplazamiento
+        listos[s] = true;
         try {
-          const estilo = f.contentDocument.createElement("style");
-          estilo.textContent = "html,body{overflow:hidden!important;margin:0}";
-          f.contentDocument.head.appendChild(estilo);
-          f.contentWindow.addEventListener("keydown", contarTecla);   // teclas dentro del juego
+          const w = f.contentWindow;
+          if (s === "carreras") {
+            // La página de pygbag es del mismo origen: se ocultan sus barras de desplazamiento
+            const estilo = f.contentDocument.createElement("style");
+            estilo.textContent = "html,body{overflow:hidden!important;margin:0}";
+            f.contentDocument.head.appendChild(estilo);
+          }
+          // teclas y clics dentro de cualquier sección cuentan como tiempo de juego activo
+          w.addEventListener("keydown", contarTecla);
+          if (s === "dormitorio") w.addEventListener("pointerdown", contarTecla);
         } catch { /* sin acceso */ }
-        f.focus();
+        avisarDormitorio();
+        pintarCarga();
+        if (s === seccion) enfocar(f);
       });
       marco.appendChild(f);
+      marcos[s] = f;
     }
+
+    function enfocar(f) {
+      f.focus();
+      try { f.contentWindow.focus(); } catch { /* sin acceso */ }
+    }
+
+    // El dormitorio deja de dibujar (y su reloj se detiene) mientras no se ve
+    function avisarDormitorio() {
+      const w = marcos.dormitorio?.contentWindow;
+      if (w && listos.dormitorio) w.postMessage({ tipo: "uma-seccion", visible: seccion === "dormitorio" }, location.origin);
+    }
+
+    function pintarCarga() {
+      const c = $("#cargando-juego"), def = SECCIONES[seccion];
+      c.hidden = !!listos[seccion];
+      $(".icono", c).textContent = def.icono;
+      $("h3", c).textContent = def.carga;
+    }
+
+    function marcarNavegacion(s) {
+      for (const a of $$(".nav a")) {
+        const href = a.getAttribute("href");
+        const de = href === "/jugar.html#dormitorio" ? "dormitorio" : href === "/jugar.html" ? "carreras" : null;
+        if (!de) continue;
+        a.classList.toggle("activo", de === s);
+        if (de === s) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      }
+      const h1 = $(".topbar h1");
+      if (h1) h1.textContent = SECCIONES[s].titulo;
+      document.title = `${SECCIONES[s].titulo} · UmaRacing`;
+    }
+
+    function abrirSeccion(s) {
+      if (!SECCIONES[s]) s = "carreras";
+      if (s === seccion) { if (listos[s]) enfocar(marcos[s]); return; }
+      seccion = s;
+      window.umaBridge.seccion = s;
+      if (!marcos[s]) crearMarco(s);
+      for (const [k, f] of Object.entries(marcos)) {
+        f.classList.toggle("seccion-oculta", k !== s);
+        f.tabIndex = k === s ? 0 : -1;
+      }
+      for (const b of $$("[data-seccion]", $(".secciones-juego"))) b.setAttribute("aria-selected", String(b.dataset.seccion === s));
+      marco.setAttribute("aria-labelledby", `tab-${s}`);
+      for (const el of $$("[data-solo]")) el.hidden = el.dataset.solo !== s;
+      $("#reiniciar").textContent = SECCIONES[s].recargar;
+      marcarNavegacion(s);
+      if (seccionDeHash() !== s) history.replaceState(null, "", s === "dormitorio" ? "#dormitorio" : location.pathname);
+      avisarDormitorio();
+      pintarCarga();
+      if (listos[s]) enfocar(marcos[s]);
+    }
+
+    // mensajes del dormitorio: volver a la carrera con su botón "Carreras" y compras hechas con tus monedas
+    addEventListener("message", (e) => {
+      if (e.origin !== location.origin || e.source !== marcos.dormitorio?.contentWindow) return;
+      if (e.data?.tipo === "uma-abrir") window.umaBridge.abrir(e.data.seccion);
+      if (e.data?.tipo === "uma-saldo") {
+        if (Number.isFinite(e.data.saldo)) actualizarMonedas(e.data.saldo);
+        if (Array.isArray(e.data.logros)) celebrarLogros(e.data.logros);
+      }
+    });
+    addEventListener("hashchange", () => abrirSeccion(seccionDeHash()));
+    for (const b of $$("[data-seccion]", $(".secciones-juego"))) b.addEventListener("click", () => abrirSeccion(b.dataset.seccion));
+    // en la barra lateral, "Jugar" y "Dormitorio" cambian de sección sin recargar la página
+    for (const a of $$('.nav a[href="/jugar.html"], .nav a[href="/jugar.html#dormitorio"]')) {
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        $("#sidebar")?.classList.remove("abierta");
+        abrirSeccion(a.getAttribute("href").endsWith("#dormitorio") ? "dormitorio" : "carreras");
+      });
+    }
+
     // ---- Tiempo de juego activo: un latido por minuto con las teclas presionadas dentro del juego
     let sesionJuego = null, teclas = 0, segundosActivos = 0;
     const contarTecla = () => { teclas++; };
@@ -150,8 +265,12 @@
     cargarReto();
 
     $("#pantalla-completa").addEventListener("click", () => marco.requestFullscreen?.());
-    $("#reiniciar").addEventListener("click", cargarJuego);
-    cargarJuego();
+    $("#reiniciar").addEventListener("click", () => {
+      crearMarco(seccion);
+      marcos[seccion].tabIndex = 0;
+      pintarCarga();
+    });
+    abrirSeccion(seccionDeHash());
     iniciarTiempo();
   </script>
 </body>

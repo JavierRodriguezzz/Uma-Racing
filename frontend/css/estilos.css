@@ -357,6 +357,16 @@ tr.yo { background: rgba(255, 210, 63, .08) !important; box-shadow: inset 3px 0 
 .marco-juego { position: relative; width: 100%; aspect-ratio: 2 / 1; background: #000; border-radius: 10px; overflow: hidden;
   border: 10px solid #1a1440; box-shadow: 0 0 0 2px var(--borde-fuerte), 6px 6px 0 #000, 0 0 50px rgba(56, 232, 255, .15); }
 .marco-juego iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+/* Secciones de la interfaz del juego (Carreras / Dormitorio): pestañas pegadas al marco */
+.pestanas.secciones-juego { margin: 0 0 -20px; padding-left: 14px; border-bottom: 0; position: relative; z-index: 1; }
+.secciones-juego button:hover { color: var(--texto); }
+.pestanas.secciones-juego button[aria-selected="true"] { background: #1a1440; border-color: #1a1440; border-bottom-color: #1a1440; }
+.secciones-juego button:focus-visible { outline: 3px solid var(--cian); outline-offset: -3px; }
+/* la sección que no se ve conserva su tamaño (el lienzo del juego no se redimensiona) */
+.marco-juego iframe.seccion-oculta { visibility: hidden; pointer-events: none; }
+.marco-carga { position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; color: #fff; background: #000; }
+.marco-carga h3 { color: #fff; }
+.marco-carga[hidden], [data-solo][hidden] { display: none !important; }
 .controles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
 kbd { font-family: var(--fuente-pixel); font-size: 10px; padding: 3px 6px; border-radius: 3px; border: 1px solid var(--borde-fuerte); border-bottom-width: 3px; background: var(--noche-0); color: var(--texto); }
 

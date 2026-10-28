@@ -34,7 +34,8 @@
 
     await iniciarPagina();
     const RAREZA = { comun: "Común", rara: "Rara", epica: "Épica" };
-    const items = (await get("/items", { gratuito: false, limit: 100 })).datos;
+    // los muebles no pueden ser premio (se tienen varias piezas)
+    const items = (await get("/items", { gratuito: false, limit: 100 })).datos.filter((i) => i.tipo !== "mueble");
     const c = crud({
       contenedor: $("#tabla"), endpoint: "/gacha/premios", nombre: "premio", puedeEliminar: true,
       columnas: [

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dormitorio · UmaRacing</title>
+  <link rel="icon" href="/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&family=Silkscreen&display=swap">
+  <link rel="stylesheet" href="/css/estilos.css">
+  <link rel="stylesheet" href="/css/dormitorio.css">
+  <script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+</head>
+<body class="dorm">
+  <div id="escena" aria-label="Dormitorio en 3D"></div>
+  <div id="burbujas" aria-live="polite"></div>
+
+  <!-- Barra superior -->
+  <header class="dorm-barra">
+    <a class="btn btn-oro dorm-volver" id="btn-volver" href="/dashboard.html">‹ Volver</a>
+    <!-- dentro de la interfaz del juego (jugar.html) este botón reemplaza a "Volver" -->
+    <button class="btn btn-oro dorm-volver" id="btn-carreras" type="button" title="Ir a las carreras" hidden>🏁 Carreras</button>
+    <div class="dorm-chip" id="chip-comodidad" title="Comodidad: suma de los muebles colocados y las chibis que viven aquí">
+      <span class="dorm-chip-ico" aria-hidden="true">☺</span>
+      <span class="dorm-chip-etq">Comodidad</span> <strong id="comodidad">0</strong>
+    </div>
+    <button class="dorm-chip dorm-reloj" id="reloj" type="button" title="Hora del dormitorio. Clic: cambia la velocidad del tiempo">
+      <span id="reloj-ico" aria-hidden="true">☀</span> <strong id="reloj-hora">07:30</strong> <span class="dorm-chip-etq" id="reloj-fase">Mañana · ×4</span>
+    </button>
+    <div class="dorm-chip"><span class="dorm-nivel">Nv.<b id="nivel">1</b></span> <span id="nombre-dorm">Dormitorio</span></div>
+    <div class="dorm-chip" id="chip-monedas"><span class="dorm-moneda" aria-hidden="true">●</span> <strong id="monedas">0</strong> <span class="dorm-chip-etq" id="monedas-etq">monedas</span></div>
+  </header>
+
+  <!-- Botones de esquina -->
+  <nav class="dorm-acciones izq" aria-label="Acciones">
+    <button class="dorm-hex" id="btn-editar" type="button"><span aria-hidden="true">✎</span>Editar</button>
+    <button class="dorm-hex" id="btn-tienda" type="button"><span aria-hidden="true">🛋</span>Tienda</button>
+    <button class="dorm-hex" id="btn-coleccion" type="button"><span aria-hidden="true">★</span>Chibis</button>
+  </nav>
+  <nav class="dorm-acciones der" aria-label="Vista">
+    <button class="dorm-hex" id="btn-ia" type="button" title="Muestra necesidades, acción actual y campo de visión de cada chibi"><span aria-hidden="true">◉</span>IA</button>
+    <button class="dorm-hex" id="btn-vista" type="button"><span aria-hidden="true">◎</span>Vista</button>
+    <button class="dorm-hex" id="btn-reiniciar" type="button" title="Borra el progreso guardado en este navegador"><span aria-hidden="true">↺</span>Reiniciar</button>
+  </nav>
+
+  <!-- Sin chibis todavía -->
+  <div class="dorm-vacio" id="vacio" hidden>
+    <strong>Aún no vive nadie aquí</strong>
+    Consigue chibis en <b>★ Chibis</b>: algunas se compran con monedas y otras salen en el gachapón.
+  </div>
+
+  <!-- Ficha de la chibi seleccionada -->
+  <aside class="dorm-ficha" id="ficha" hidden></aside>
+
+  <!-- Modo edición -->
+  <div class="dorm-edicion" id="edicion" hidden>
+    <div class="dorm-edicion-cab">
+      <strong>Modo edición</strong>
+      <span class="dorm-ayuda">Arrastra un mueble para moverlo · <kbd>R</kbd> rota · <kbd>Supr</kbd> lo guarda</span>
+      <span class="dorm-sel" id="sel-acciones" hidden>
+        <button class="btn btn-sm btn-cian" id="btn-rotar" type="button">⟳ Rotar</button>
+        <button class="btn btn-sm" id="btn-guardar-mueble" type="button">Guardar</button>
+      </span>
+      <button class="btn btn-sm btn-primario" id="btn-listo" type="button">Listo</button>
+    </div>
+    <div class="dorm-bandeja" id="bandeja" aria-label="Muebles guardados"></div>
+  </div>
+
+  <!-- Panel lateral: tienda / colección -->
+  <aside class="dorm-panel" id="panel" hidden>
+    <header><h2 id="panel-titulo">Tienda</h2><button class="btn btn-texto btn-icono" id="panel-cerrar" type="button" aria-label="Cerrar">✕</button></header>
+    <div class="dorm-panel-cuerpo" id="panel-cuerpo"></div>
+  </aside>
+
+  <div class="dorm-carga" id="carga"><div class="dorm-carga-txt">Preparando el dormitorio…</div></div>
+
+  <script type="module" src="/js/dormitorio/main.js"></script>
+</body>
+</html>

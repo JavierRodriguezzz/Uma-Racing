@@ -15,8 +15,8 @@ from . import config
 from .db import conectar, valor
 from .errors import registrar_manejadores
 from .services import simulador
-from .routers import (anuncios, apuestas, auth, compras, gacha, items, logros, monedas, panel, partidas, perfil,
-                      ranking, tiempo, usuarios)
+from .routers import (anuncios, apuestas, auth, compras, dormitorio, gacha, items, logros, monedas, panel, partidas,
+                      perfil, ranking, tiempo, usuarios)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -61,7 +61,7 @@ def precalcular_momios():
 
 registrar_manejadores(app)
 for r in (auth, perfil, items, compras, anuncios, partidas, ranking, logros, usuarios, panel,
-          monedas, tiempo, apuestas, gacha):
+          monedas, tiempo, apuestas, gacha, dormitorio):
     app.include_router(r.router)
 
 

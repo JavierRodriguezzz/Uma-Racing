@@ -249,7 +249,7 @@
     <tr><td>Monetización</td><td>No planeada</td><td>06/10</td><td>Javier (Google Pay), Marco (tiempo y apuestas), José (gachapón)</td><td>Google Pay (TEST), tiempo de juego, apuestas, gachapón y 14 pruebas</td><td><code>775b736</code>–<code>57224dd</code></td><td>Terminado</td></tr>
     <tr><td>Rediseño UI</td><td>No planeado</td><td>06/10</td><td>Marco A. Muñoz</td><td>Tema “Arcade nocturno” con anime.js</td><td><code>61f761c</code>, sección 8.3</td><td>Terminado</td></tr>
     <tr><td>Pruebas</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>05/10–07/10</td><td>Equipo</td><td>Matriz de pruebas y correcciones</td><td>Sección 13, <code>e4b62e9</code>, <code>eb71cdb</code></td><td>Terminado</td></tr>
-    <tr><td>Dormitorio 3D</td><td>No planeado</td><td>27/10</td><td>Javier A. Rodríguez</td><td>Dormitorio con chibis (IA), muebles, tienda y acomodo conectados a la cuenta; 7 pruebas</td><td>Secciones 11.4 y 13; <span class="pendiente">cambios aún sin commit</span></td><td>Terminado</td></tr>
+    <tr><td>Dormitorio 3D</td><td>No planeado</td><td>27/10</td><td>Javier A. Rodríguez</td><td>Dormitorio con chibis (IA), muebles, tienda y acomodo conectados a la cuenta; 7 pruebas</td><td><code>ea6a8d4</code>, secciones 11.4 y 13</td><td>Terminado</td></tr>
     <tr><td>Documentación</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>07/10–…</td><td>Equipo</td><td>README y este PDF</td><td><code>884725f</code>, <code>c71724c</code></td><td>En proceso</td></tr>
     <tr><td>Despliegue</td><td>28/10–02/11</td><td>—</td><td>José O. Guzmán</td><td>Stack Docker (db, api, nginx) en Portainer desde GitHub</td><td>Sección 14.3</td><td>Pendiente</td></tr>
     <tr><td>Entrega</td><td>06/11</td><td>—</td><td>Equipo</td><td>Versión final: repositorio, PDF y demostración</td><td>Repo + PDF + demo</td><td>Pendiente</td></tr>
@@ -1073,7 +1073,7 @@ uvicorn app.main:app --reload --port 8000</pre>
   <li><b>Repositorio:</b> <a href="https://github.com/Perrullo/Uma-Racing">https://github.com/Perrullo/Uma-Racing</a></li>
   <li><b>Ramas:</b> <code>main</code> (versión del juego base) y <code>develop</code> (rama de integración del proyecto web). <span class="pendiente">Recomendado: ramas de función por integrante (<code>feature/…</code>) que se integran a <code>develop</code> mediante pull request.</span></li>
   <li><b>Convención de commits:</b> Conventional Commits (<code>feat</code>, <code>fix</code>, <code>test</code>, <code>docs</code>, <code>refactor</code>, <code>perf</code>, <code>style</code>) con el ámbito entre paréntesis (<code>db</code>, <code>api</code>, <code>web</code>, <code>juego</code>).</li>
-  <li><b>Commits significativos:</b> <code>ae0da38</code> (esquema normalizado), <code>8dfab45</code> (API con JWT y roles), <code>c5fc71a</code> (21 pruebas), <code>fba91e4</code> (monetización), <code>e4b62e9</code> (corrección de carga del juego). <span class="pendiente">El dormitorio (28/10/2026) aún no tiene commit: falta registrarlo en <code>develop</code>.</span></li>
+  <li><b>Commits significativos:</b> <code>ae0da38</code> (esquema normalizado), <code>8dfab45</code> (API con JWT y roles), <code>c5fc71a</code> (21 pruebas), <code>fba91e4</code> (monetización), <code>e4b62e9</code> (corrección de carga del juego)., <code>ea6a8d4</code> (dormitorio 3D).</li>
   <li><b>Contribución de cada integrante:</b> <span class="pendiente">[Describir la aportación de cada integrante. Hoy el historial muestra commits de dos autores: “Perrullo” (juego base) y Javier A. Rodríguez Morales (proyecto web). Marco y José deben registrar commits propios antes de la entrega.]</span></li>
   <li><b>Versiones:</b> <span class="pendiente">[Crear la etiqueta <code>v1.0.0</code> al entregar.]</span></li>
 </ul>
@@ -1210,7 +1210,7 @@ uvicorn app.main:app --reload --port 8000</pre>
     <tr><td>Matriz de pruebas</td><td>13</td><td>Completo</td></tr>
     <tr><td>Instalación y ejecución</td><td>14.1, 14.2</td><td>Completo</td></tr>
     <tr><td>Despliegue</td><td>14.3</td><td><span class="pendiente">Pendiente</span></td></tr>
-    <tr><td>Evidencia de Git</td><td>14.4</td><td><span class="pendiente">Falta contribución por integrante y commit del dormitorio</span></td></tr>
+    <tr><td>Evidencia de Git</td><td>14.4</td><td><span class="pendiente">Falta contribución por integrante</span></td></tr>
     <tr><td>Resultados, limitaciones y conclusiones</td><td>15</td><td>Completo</td></tr>
     <tr><td>Anexos técnicos y matriz de trazabilidad</td><td>16</td><td>Completo</td></tr>
   </tbody>

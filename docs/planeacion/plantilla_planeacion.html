@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Planeación del Proyecto Final — Equipo 01</title>
+<!-- Fuente: plantilla_planeacion.html. planeacion.html se regenera con generar_planeacion.py -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Noto+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --azul: #1F4E79; --azul-2: #2E6DA4; --suave: #E8F0F8; --borde: #9db3c8; --texto: #1d1d1f; --gris: #5b6470; }
+  @page {
+    size: Letter; margin: 22mm 20mm 20mm 20mm;
+    @top-right { content: "UMARACING ONLINE | PLANEACIÓN DEL PROYECTO FINAL — EQUIPO 01"; font: 7.5pt "Noto Serif", serif; color: #777; letter-spacing: .3px; }
+    @bottom-center { content: "Página " counter(page) " de " counter(pages); font: 8pt "Noto Serif", serif; color: #777; }
+  }
+  @page :first { @top-right { content: none; } @bottom-center { content: none; } }
+  @page horizontal { size: Letter landscape; margin: 18mm 16mm 16mm 16mm; }
+  .horizontal { page: horizontal; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10.2pt/1.5 "Noto Serif", Georgia, serif; color: var(--texto); background: #fff; }
+  h1, h2, h3, h4 { font-family: "Noto Sans", Arial, sans-serif; color: var(--azul); line-height: 1.25; }
+  h2 { font-size: 17pt; margin: 0 0 10px; break-before: page; break-after: avoid; position: relative; }
+  h3 { font-size: 12.5pt; margin: 16px 0 6px; color: var(--azul-2); break-after: avoid; position: relative; }
+  p { margin: 0 0 8px; text-align: justify; }
+  ul, ol { margin: 0 0 8px; padding-left: 22px; }
+  li { margin-bottom: 2px; }
+  a { color: var(--azul-2); text-decoration: none; }
+  code { font-family: "Noto Sans Mono", Consolas, monospace; font-size: 8.4pt; background: #f1f4f8; padding: 0 3px; border-radius: 2px; }
+  .marca { position: absolute; font-size: 1.5px; color: #fff; }
+  table.tabla { width: 100%; border-collapse: collapse; margin: 4px 0 8px; font-size: 8.6pt; line-height: 1.35; }
+  .tabla th { background: var(--azul); color: #fff; text-align: left; font: 600 8.2pt "Noto Sans", sans-serif; padding: 5px 6px; border: 1px solid var(--azul); }
+  .tabla td { border: 1px solid #b9c4d0; padding: 4px 6px; vertical-align: top; }
+  .tabla tr { break-inside: avoid; }
+  .tabla.compacta { font-size: 7.7pt; }
+  .tabla.compacta th { font-size: 7.5pt; padding: 4px 5px; }
+  .tabla.compacta td { padding: 3px 5px; }
+  .tabla tr.fase { break-after: avoid; }
+  .tabla tr.fase td { background: var(--suave); font: 700 8pt "Noto Sans", sans-serif; color: var(--azul); }
+  thead { display: table-header-group; }
+  body { counter-reset: figura tabla; }
+  .pie-tabla { counter-increment: tabla; font: 600 8.4pt "Noto Sans", sans-serif; color: var(--azul); margin: 10px 0 2px; break-after: avoid; }
+  .pie-tabla::before { content: "Tabla " counter(tabla) ". "; }
+  figure { margin: 8px 0 12px; break-inside: avoid; text-align: center; }
+  figcaption { counter-increment: figura; font: italic 8.4pt "Noto Serif", serif; color: var(--gris); margin-top: 4px; }
+  figcaption::before { content: "Figura " counter(figura) ". "; font-style: normal; font-weight: 700; color: var(--azul); }
+  figure svg { width: 100%; height: auto; }
+  .gantt-fases svg { width: 100%; }
+  .caja { background: var(--suave); border-left: 4px solid var(--azul); padding: 8px 12px; margin: 8px 0 12px; break-inside: avoid; font-size: 9.4pt; }
+  .caja b.titulo { display: block; color: var(--azul); font-family: "Noto Sans", sans-serif; margin-bottom: 2px; }
+  .caja p:last-child { margin-bottom: 0; }
+  .nota { font-size: 7.4pt; color: var(--gris); }
+  p.nota { font-size: 8.2pt; text-align: left; }
+  .ley { display: inline-flex; align-items: center; gap: 4px; margin-right: 12px; font: 8pt "Noto Sans", sans-serif; }
+  .ley i { display: inline-block; width: 14px; height: 8px; border-radius: 2px; }
+  .leyenda { text-align: center; margin: 2px 0 4px; }
+  .check { list-style: none; padding-left: 4px; columns: 2; column-gap: 24px; font-size: 9.4pt; }
+  .check li { break-inside: avoid; margin-bottom: 4px; padding-left: 20px; text-indent: -20px; }
+  .check li::before { content: "☐ "; color: var(--azul); font-size: 11pt; }
+  /* Portada */
+  .portada { height: 236mm; display: flex; flex-direction: column; text-align: center; }
+  .portada .inst { font: 600 9pt "Noto Sans", sans-serif; letter-spacing: 1.5px; color: var(--gris); text-transform: uppercase; }
+  .portada h1 { font-size: 26pt; margin: 40px 0 6px; }
+  .portada .sub { font-size: 13pt; color: #444; margin: 0 30px 4px; text-align: center; }
+  .portada .equipo { font: 700 15pt "Noto Sans", sans-serif; color: var(--azul-2); margin: 18px 0 36px; }
+  .portada table { margin: 0 auto; border-collapse: collapse; font-size: 10pt; text-align: left; width: 84%; }
+  .portada td { padding: 5px 8px; border-bottom: 1px solid #e1e7ee; vertical-align: top; }
+  .portada td:first-child { font: 600 8.8pt "Noto Sans", sans-serif; color: var(--azul); width: 34%; }
+  .portada .pie-portada { margin-top: auto; font-size: 8.4pt; color: var(--gris); }
+  /* Índice */
+  .indice { list-style: none; padding: 0; margin: 0; font-size: 9.6pt; }
+  .indice a { display: flex; color: var(--texto); padding: 1.5px 0; }
+  .indice a span:first-child { flex: 1; overflow: hidden; white-space: nowrap; }
+  .indice a span:first-child::after { content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . "; color: #aab4c0; }
+  .indice .toc-2 a { font: 600 9.8pt "Noto Sans", sans-serif; color: var(--azul); margin-top: 6px; }
+  .indice .toc-3 a { padding-left: 18px; font-size: 9pt; }
+  .toc-pag { padding-left: 6px; min-width: 22px; text-align: right; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ PORTADA -->
+<section class="portada">
+  <div class="inst">Programación Web · Grupo C · 7.º semestre</div>
+  <h1>PLANEACIÓN Y ORGANIZACIÓN DEL PROYECTO FINAL DE SOFTWARE</h1>
+  <p class="sub">UmaRacing Online: videojuego de carreras en el navegador con plataforma web y publicidad simulada</p>
+  <div class="equipo">Equipo 01</div>
+  <table>
+    <tr><td>Proyecto asignado</td><td>Proyecto 3 — Videojuego con publicidad</td></tr>
+    <tr><td>Materia</td><td>Programación Web</td></tr>
+    <tr><td>Docente</td><td>Francisco Hunahpu Sahagún González</td></tr>
+    <tr><td>Integrantes</td><td>Javier Antonio Rodríguez Morales<br>Marco Antonio Muñoz Malpica<br>José Oliver Guzmán Camacho</td></tr>
+    <tr><td>Grupo</td><td>C</td></tr>
+    <tr><td>Fecha de este plan</td><td>07/10/2026</td></tr>
+    <tr><td>Periodo planeado</td><td>07/10/2026 al 06/11/2026 (fecha de entrega indicada por el docente)</td></tr>
+    <tr><td>Repositorio Git</td><td><a href="https://github.com/Perrullo/Uma-Racing">https://github.com/Perrullo/Uma-Racing</a></td></tr>
+  </table>
+  <div class="pie-portada">Documento de planeación (línea base). Las evidencias mencionadas son <b>esperadas</b>: se generarán durante el desarrollo y no se presentan como resultados realizados.</div>
+</section>
+
+<h3 style="font-size:15pt;color:var(--azul);margin-top:0">Índice</h3>
+<ul class="indice">
+{{INDICE}}
+</ul>
+
+<!-- ============================================================ 1 -->
+<h2 id="s1">1. Presentación y alcance del proyecto</h2>
+<h3 id="s1-1">1.1 Proyecto e integrantes</h3>
+<p><b>Nombre del proyecto:</b> UmaRacing Online. <b>Integrantes:</b> Javier Antonio Rodríguez Morales, Marco Antonio Muñoz Malpica y José Oliver Guzmán Camacho (Equipo 01). <b>Proyecto asignado:</b> Proyecto 3 — Videojuego con publicidad.</p>
+<h3 id="s1-2">1.2 Problema que se atenderá</h3>
+<p>UmaRacing es un juego de carreras para dos personas en el mismo teclado, hecho en Python con pygame. Hoy solo funciona en escritorio: hay que instalar Python para jugarlo, no guarda partidas, puntajes ni progreso, no tiene cuentas de usuario y no ofrece ninguna forma de sostener su operación ni de medir su uso. Además, si las recompensas se calcularan en el cliente, cualquier jugador podría alterarlas desde el navegador. El proyecto convertirá el juego en un sistema web en el que el servidor registre y valide cada partida, compra y recompensa.</p>
+<h3 id="s1-3">1.3 Usuarios principales</h3>
+<ul>
+  <li><b>Jugador (rol “jugador”):</b> crea su cuenta, juega en el navegador como Jugador 1, gana y gasta monedas virtuales, desbloquea corredoras y escenarios, ve anuncios con recompensa y compite en el ranking.</li>
+  <li><b>Invitado:</b> juega como Jugador 2 en el mismo teclado, sin cuenta.</li>
+  <li><b>Administrador (rol “administrador”):</b> gestiona usuarios, artículos, anuncios, logros, paquetes de monedas y premios; consulta el dashboard, los reportes y la bitácora; y reembolsa compras.</li>
+</ul>
+<h3 id="s1-4">1.4 Objetivo general</h3>
+<p>Desarrollar, del 07/10/2026 al 06/11/2026, un sistema web cliente-servidor que ejecute el videojuego UmaRacing en el navegador y que registre y valide en el backend partidas, puntajes, compras, recompensas y publicidad simulada, con persistencia en MariaDB, control de acceso por roles, reportes y estadísticas, sin modificar la jugabilidad original del juego.</p>
+<h3 id="s1-5">1.5 Funciones que incluirá la versión final</h3>
+<ul>
+  <li>Registro, inicio y cierre de sesión con contraseñas cifradas (bcrypt) y token JWT revocable; perfil del jugador.</li>
+  <li>Juego en el navegador (WebAssembly) con corredoras bloqueadas o desbloqueadas según el inventario.</li>
+  <li>Registro de partidas validado por el servidor (antitrampa), puntaje, monedas, logros automáticos y ranking por periodo.</li>
+  <li>Tienda de corredoras y escenarios con compra transaccional, inventario, libro mayor de monedas y reembolsos.</li>
+  <li>Publicidad simulada: ver anuncio → completar evento → recibir recompensa validada por el servidor.</li>
+  <li>Monetización simulada: compra de monedas con Google Pay en modo de prueba, monedas por tiempo de juego, apuestas con monedas virtuales y gachapón con probabilidades públicas.</li>
+  <li>Administración con CRUD de usuarios, artículos, anuncios, logros, paquetes y premios; búsqueda, filtros, ordenamiento y paginación.</li>
+  <li>Dashboard por rol, 4 reportes con rango de fechas, gráficas dinámicas, exportación CSV y bitácora de operaciones.</li>
+</ul>
+<h3 id="s1-6">1.6 Exclusiones y restricciones</h3>
+<p>Ninguna exclusión elimina requisitos obligatorios de los documentos base; todos se cubren en la matriz de la sección 2.</p>
+<ul>
+  <li><b>No se cobrará dinero real:</b> Google Pay se usará solo en su entorno de pruebas (TEST). Las monedas son virtuales y no se pueden retirar.</li>
+  <li><b>No habrá modo en línea entre equipos distintos:</b> las carreras seguirán siendo locales, en un mismo teclado, como en el juego original.</li>
+  <li><b>No se integrarán redes publicitarias reales:</b> los anuncios serán simulados.</li>
+  <li><b>No se modificará la jugabilidad del juego original</b>; solo se agregarán conexiones con la plataforma.</li>
+  <li><b>No se desarrollará una app móvil nativa;</b> el portal será responsivo.</li>
+</ul>
+<p><b>Restricciones de tiempo:</b> 31 días naturales, con una disponibilidad estimada de 20 a 25 horas por semana por integrante, compartidas con otras materias. <b>Restricciones de conocimientos:</b> el equipo tiene poca experiencia con WebAssembly (pygbag), FastAPI y Docker, por lo que se reserva tiempo de aprendizaje en las primeras actividades de cada tema. <b>Restricciones de infraestructura:</b> desarrollo en computadoras personales con XAMPP (MariaDB) y despliegue en un servidor con Docker y Portainer; el juego web requiere internet para descargar su intérprete desde el CDN de pygame-web.</p>
+
+<!-- ============================================================ 2 -->
+<h2 id="s2">2. Identificación de requisitos y entregables</h2>
+<p>La matriz relaciona cada requisito obligatorio de los <i>Requerimientos de Proyectos Finales de Software</i> (generales y del Proyecto 3) y de los <i>Lineamientos de Documentación</i> con el módulo donde se implementará, las actividades de la sección 3, el responsable y la evidencia esperada para comprobar su cumplimiento.</p>
+<div class="pie-tabla">Matriz de requisitos obligatorios</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:5%">ID</th><th style="width:27%">Requisito obligatorio</th><th style="width:12%">Módulo</th><th style="width:11%">Actividades</th><th style="width:12%">Responsable</th><th>Evidencia esperada</th></tr></thead>
+  <tbody>
+    <tr class="fase"><td colspan="6">Requerimientos generales</td></tr>
+    <tr><td>R01</td><td>Arquitectura cliente-servidor: frontend, API REST, backend y BD; el frontend no accede a la BD</td><td>Arquitectura</td><td>A07, A17</td><td>Javier R.</td><td>Diagrama de arquitectura; backend separado en capas; credenciales solo en el servidor</td></tr>
+    <tr><td>R02</td><td>BD real con al menos 6 tablas relacionadas, normalizada hasta 3FN, con PK, FK, restricciones e índices</td><td>Base de datos</td><td>A09, A12–A15</td><td>Javier R. (con Marco M. y José G.)</td><td>Diagrama ER, diccionario de datos y <code>schema.sql</code> que crea la BD desde cero</td></tr>
+    <tr><td>R03</td><td>Script SQL y datos de prueba</td><td>Base de datos</td><td>A16</td><td>José G.</td><td><code>seed.sql</code> y <code>seed_demo.sql</code> cargados sin errores</td></tr>
+    <tr><td>R04</td><td>API REST con métodos HTTP correctos, JSON y códigos de estado (200, 201, 400, 401, 403, 404, 409, 422, 500)</td><td>API</td><td>A10, A17</td><td>Javier R.</td><td>Diseño de la API y respuestas de error uniformes comprobadas en pruebas</td></tr>
+    <tr><td>R05</td><td>Al menos 12 endpoints funcionales</td><td>API</td><td>A18–A27</td><td>Todos</td><td>Lista de endpoints en Swagger (<code>/docs</code>)</td></tr>
+    <tr><td>R06</td><td>Al menos 3 módulos principales con CRUD</td><td>Administración</td><td>A20, A22, A23, A24, A26</td><td>Javier R., José G.</td><td>CRUD de artículos, anuncios, usuarios, paquetes y premios funcionando en pantallas de administración</td></tr>
+    <tr><td>R07</td><td>Autenticación: login, logout, control de sesión, contraseñas con hash y rutas protegidas</td><td>Autenticación</td><td>A18, A30</td><td>Javier R.</td><td>Hash bcrypt en la BD; token revocado tras logout; 401 sin token</td></tr>
+    <tr><td>R08</td><td>Al menos 2 roles con permisos verificados en el backend</td><td>Autenticación</td><td>A18</td><td>Javier R.</td><td>Prueba: un jugador recibe 403 en rutas de administrador</td></tr>
+    <tr><td>R09</td><td>Dashboard con tarjetas, contadores, tablas, gráficas e indicadores</td><td>Panel</td><td>A27, A37</td><td>José G.</td><td>Dashboard por rol con datos reales y alertas</td></tr>
+    <tr><td>R10</td><td>Al menos 5 reglas de negocio reales</td><td>Varios</td><td>A04, A20–A26</td><td>José G. (definición); dueños de módulo</td><td>Tabla de reglas con una prueba asociada a cada una</td></tr>
+    <tr><td>R11</td><td>Operación transaccional (COMMIT / ROLLBACK)</td><td>Tienda</td><td>A20</td><td>Javier R.</td><td>Compra con folio: prueba de éxito y de saldo insuficiente sin cambios</td></tr>
+    <tr><td>R12</td><td>Buscador dinámico con datos reales</td><td>Listados</td><td>A19, A33</td><td>José G.</td><td>Búsqueda por texto en tablas de administración e historial</td></tr>
+    <tr><td>R13</td><td>Filtros (al menos un módulo)</td><td>Listados</td><td>A19</td><td>José G.</td><td>Filtros por estado, tipo, rol y fechas</td></tr>
+    <tr><td>R14</td><td>Ordenamiento en tablas principales</td><td>Listados</td><td>A19, A29</td><td>José G., Marco M.</td><td>Columnas ordenables con lista blanca en el backend</td></tr>
+    <tr><td>R15</td><td>Paginación con formato estándar</td><td>Listados</td><td>A19, A29</td><td>José G., Marco M.</td><td><code>?page=&amp;limit=</code> → <code>{pagina, limite, total, totalPaginas, datos}</code></td></tr>
+    <tr><td>R16</td><td>Historial de operaciones (fecha, usuario, operación, registro, estado anterior y nuevo)</td><td>Bitácora</td><td>A23</td><td>José G.</td><td>Pantalla de bitácora con filtros</td></tr>
+    <tr><td>R17</td><td>Baja lógica de información importante</td><td>Administración</td><td>A20, A23</td><td>Javier R., José G.</td><td>Campos <code>activo</code> / <code>eliminado_en</code>; el historial se conserva</td></tr>
+    <tr><td>R18</td><td>Al menos 2 reportes con datos de la BD; uno con fecha inicial y final</td><td>Reportes</td><td>A27, A37</td><td>José G.</td><td>Reportes con rango de fechas y exportación CSV</td></tr>
+    <tr><td>R19</td><td>Al menos 2 gráficas dinámicas con datos de la API</td><td>Reportes</td><td>A37</td><td>José G.</td><td>Gráficas Chart.js alimentadas por la API</td></tr>
+    <tr><td>R20</td><td>Validaciones en frontend y backend</td><td>Todos</td><td>A18–A27, A29–A37</td><td>Todos</td><td>Formularios con mensajes por campo; 422 con detalle desde la API</td></tr>
+    <tr><td>R21</td><td>Manejo de errores con mensajes comprensibles, sin SQL, trazas ni credenciales</td><td>API</td><td>A17</td><td>Javier R.</td><td>Respuestas de error JSON; prueba con BD caída (503)</td></tr>
+    <tr><td>R22</td><td>Seguridad: consultas parametrizadas, protección contra SQL Injection, endpoints protegidos, sanitización</td><td>API</td><td>A17, A18</td><td>Javier R.</td><td>Prueba de inyección SQL sin efecto; revisión de consultas</td></tr>
+    <tr><td>R23</td><td>Variables de entorno (<code>.env</code> fuera del repositorio y <code>.env.example</code>)</td><td>Configuración</td><td>A02, A17</td><td>Javier R.</td><td><code>.env.example</code> versionado; <code>.env</code> en <code>.gitignore</code></td></tr>
+    <tr><td>R24</td><td>Diseño responsivo (laptop, PC, tablet y, preferentemente, smartphone)</td><td>Frontend</td><td>A29, A41</td><td>Marco M.</td><td>Capturas a 1366, 820 y 390 px de ancho</td></tr>
+    <tr><td>R25</td><td>Estados de interfaz (cargando, sin resultados, error, éxito) y confirmaciones en operaciones críticas</td><td>Frontend</td><td>A29</td><td>Marco M.</td><td>Componentes de estado y modal de confirmación usados en todas las pantallas</td></tr>
+    <tr><td>R26</td><td>Navegación coherente (login → dashboard → módulos)</td><td>Frontend</td><td>A08, A29</td><td>Marco M.</td><td>Mapa de navegación y menú por rol</td></tr>
+    <tr><td>R27</td><td>Uso continuo de Git con participación identificable de cada integrante</td><td>Repositorio</td><td>A02, A39, A45</td><td>Todos</td><td>Commits semanales de los 3 integrantes en ramas <code>feature/*</code> integradas por pull request</td></tr>
+    <tr><td>R28</td><td>README (descripción, integrantes, tecnologías, instalación, configuración, usuarios de prueba, endpoints, capturas)</td><td>Documentación</td><td>A46</td><td>Javier R.</td><td><code>README.md</code> verificado por otro integrante</td></tr>
+    <tr><td>R29</td><td>Documentación de API (método, URL, parámetros, body, respuesta, códigos y permisos)</td><td>Documentación</td><td>A47</td><td>Javier R.</td><td>Swagger en <code>/docs</code> y <code>docs/api.md</code></td></tr>
+    <tr><td>R30</td><td>Instrucciones de instalación y ejecución</td><td>Documentación</td><td>A46</td><td>Javier R.</td><td>Sección de instalación del README probada en una computadora limpia</td></tr>
+    <tr><td>R31</td><td>Documentación final en PDF con la estructura obligatoria de 16 secciones</td><td>Documentación</td><td>A45, A48, A49</td><td>Todos (José G. ensambla)</td><td>PDF con portada, índice, páginas numeradas y checklist completo</td></tr>
+    <tr class="fase"><td colspan="6">Requerimientos específicos del Proyecto 3 — Videojuego con publicidad</td></tr>
+    <tr><td>P01</td><td>Usuarios y perfiles; registrar usuario e iniciar sesión</td><td>Perfil</td><td>A18, A30</td><td>Javier R.</td><td>Pantallas de registro, login y perfil conectadas a la API</td></tr>
+    <tr><td>P02</td><td>Registrar partidas y puntuación; guardar progreso</td><td>Partidas</td><td>A21, A38</td><td>Marco M.</td><td>Partida jugada en el navegador registrada en la BD con su puntaje</td></tr>
+    <tr><td>P03</td><td>Consultar ranking</td><td>Ranking</td><td>A21, A32</td><td>Marco M.</td><td>Ranking por periodo y criterio</td></tr>
+    <tr><td>P04</td><td>Registrar logros</td><td>Logros</td><td>A21, A32</td><td>Marco M.</td><td>Logros otorgados automáticamente al cumplir la meta</td></tr>
+    <tr><td>P05</td><td>Publicidad simulada: ver anuncio → completar evento → recibir recompensa</td><td>Publicidad</td><td>A22, A33</td><td>José G.</td><td>Pantalla de anuncios con recompensa en monedas</td></tr>
+    <tr><td>P06</td><td>El servidor valida las recompensas (no basta con modificar una variable en JavaScript)</td><td>Publicidad y partidas</td><td>A21, A22</td><td>Marco M., José G.</td><td>Pruebas: reclamar un anuncio antes de tiempo y reportar un resultado imposible son rechazados</td></tr>
+    <tr><td>P07</td><td>Recompensas (monedas, objetos virtuales)</td><td>Tienda y monedero</td><td>A20, A24–A26</td><td>Javier R.</td><td>Libro mayor de monedas con cada movimiento</td></tr>
+    <tr><td>P08</td><td>Mostrar estadísticas</td><td>Reportes</td><td>A27, A37</td><td>José G.</td><td>Estadísticas del jugador y reportes del administrador</td></tr>
+    <tr><td>P09</td><td>El videojuego incorpora un sistema backend</td><td>Juego</td><td>A28, A38</td><td>Marco M.</td><td>El juego consulta y registra datos solo a través de la API</td></tr>
+  </tbody>
+</table>
+<h3 id="s2-1">2.1 Entregables del proyecto</h3>
+<div class="pie-tabla">Entregables principales</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:30%">Entregable</th><th>Contenido</th><th style="width:16%">Fecha planeada</th></tr></thead>
+  <tbody>
+    <tr><td>Plan de trabajo (este documento)</td><td>Alcance, matriz de requisitos, actividades, cronograma, Gantt, recursos, riesgos y plan de pruebas</td><td>09/10/2026</td></tr>
+    <tr><td>Documentos de análisis y diseño</td><td>Requerimientos, reglas de negocio, arquitectura, wireframes, modelo ER, diccionario de datos y diseño de API en <code>docs/</code></td><td>14/10/2026</td></tr>
+    <tr><td>Base de datos</td><td><code>database/schema.sql</code>, <code>seed.sql</code>, <code>seed_demo.sql</code></td><td>16/10/2026</td></tr>
+    <tr><td>MVP integrado</td><td>Autenticación, tienda, partidas, publicidad y administración funcionando de punta a punta</td><td>23/10/2026</td></tr>
+    <tr><td>Sistema completo (congelamiento)</td><td>Todos los módulos integrados en <code>develop</code></td><td>30/10/2026</td></tr>
+    <tr><td>Pruebas</td><td>Suite automatizada, matriz de pruebas y evidencias manuales</td><td>02/11/2026</td></tr>
+    <tr><td>Sistema desplegado</td><td>Stack Docker en Portainer con URL pública</td><td>02/11/2026</td></tr>
+    <tr><td>Repositorio final</td><td>Historial de participación, README, documentación de API y etiqueta <code>v1.0.0</code></td><td>06/11/2026</td></tr>
+    <tr><td>Documentación final en PDF</td><td>16 secciones de los lineamientos</td><td>06/11/2026</td></tr>
+    <tr><td>Demostración</td><td>Presentación del sistema funcionando</td><td>06/11/2026</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ 3 -->
+<section class="horizontal">
+<h2 id="s3">3. Desglose de actividades y responsabilidades</h2>
+<p>El trabajo se divide en {{TOTAL_ACT}} actividades verificables, con un total estimado de {{TOTAL_HORAS}} horas. La responsabilidad se reparte <b>por módulos de punta a punta</b>: el responsable de un módulo diseña sus tablas, programa su API y sus pantallas, escribe sus pruebas y redacta su sección del PDF. Así, cada integrante tiene participación identificable en el desarrollo y en la documentación.</p>
+<div class="pie-tabla">Actividades, responsables, duración, dependencias y criterio de terminado</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:4%">ID</th><th style="width:27%">Descripción</th><th style="width:12%">Responsable / apoyo</th><th style="width:6%">Duración</th><th style="width:9%">Depende de</th><th style="width:18%">Entregable</th><th>Criterio de terminado</th></tr></thead>
+  <tbody>
+{{ACTIVIDADES}}
+  </tbody>
+</table>
+</section>
+<h3 id="s3-1">3.1 Responsabilidades y carga por integrante</h3>
+<div class="pie-tabla">Distribución por módulos y carga estimada</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:22%">Integrante</th><th>Módulos y áreas a cargo</th><th style="width:9%">Actividades como responsable</th><th style="width:9%">Actividades de apoyo</th><th style="width:9%">Horas estimadas</th><th style="width:7%">%</th></tr></thead>
+  <tbody>
+{{CARGA}}
+  </tbody>
+</table>
+<p class="nota">Las actividades de “Todo el equipo” (corrección de defectos, documentación semanal, redacción del PDF y ensayo de la demo) se reparten en partes iguales. Además de las horas como responsable, cada integrante apoya actividades de otros módulos (revisiones de código, pruebas cruzadas y diseño de sus tablas).</p>
+<div class="pie-tabla">Secciones del PDF final a cargo de cada integrante</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:24%">Integrante</th><th>Secciones de la documentación final</th></tr></thead>
+  <tbody>
+    <tr><td>Javier Antonio Rodríguez Morales</td><td>7. Arquitectura · 9. Diseño de base de datos · 10. Diseño de API · 12. Seguridad · README y documentación de API</td></tr>
+    <tr><td>Marco Antonio Muñoz Malpica</td><td>3. Problema, objetivos y alcance · 4. Modelo de negocio · 8. Diseño UX/UI · 11. Módulos y lógica de negocio</td></tr>
+    <tr><td>José Oliver Guzmán Camacho</td><td>1. Portada · 2. Resumen ejecutivo · 5. Planeación (seguimiento real contra planeado) · 13. Pruebas · 14. Despliegue · 15. Resultados · 16. Anexos · ensamble final</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ 4 -->
+<h2 id="s4">4. Cronograma de trabajo</h2>
+<p>El cronograma abarca del <b>miércoles 07/10/2026</b> a la <b>entrega del viernes 06/11/2026</b> e incluye las fases de análisis, diseño, base de datos, backend, frontend, integración, pruebas, correcciones, despliegue, documentación y entrega. La documentación se actualiza cada viernes durante el desarrollo (A45). Cada hito cae en viernes y se asocia con un resultado verificable. Del 02/11 al 05/11 se reservan días para corregir errores e integrar el trabajo del equipo antes de la entrega.</p>
+<div class="pie-tabla">Cronograma por fase</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:15%">Fase o actividad</th><th style="width:10%">Inicio</th><th style="width:10%">Fin</th><th style="width:13%">Responsable</th><th>Entregable estimado</th><th style="width:22%">Evidencia esperada</th><th style="width:8%">Estado</th></tr></thead>
+  <tbody>
+{{CRONOGRAMA}}
+  </tbody>
+</table>
+<div class="pie-tabla">Hitos de control</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:6%">Hito</th><th style="width:12%">Fecha</th><th style="width:10%">Día</th><th>Resultado verificable</th><th style="width:9%">Estado</th></tr></thead>
+  <tbody>
+{{HITOS}}
+  </tbody>
+</table>
+<figure class="gantt-fases">
+{{GANTT_FASES}}
+<div class="leyenda">{{LEYENDA_FASES}}</div>
+<figcaption>Diagrama de Gantt por fase, con los hitos de control (H1–H6).</figcaption>
+</figure>
+
+<section class="horizontal">
+<h3 id="s4-1" style="break-before: page">4.1 Diagrama de Gantt por actividad</h3>
+<figure>
+{{GANTT_1}}
+<div class="leyenda">{{LEYENDA}}</div>
+<figcaption>Diagrama de Gantt por actividad (1/2): planeación, diseño, base de datos y backend. Color = responsable principal.</figcaption>
+</figure>
+<figure style="break-before: page">
+{{GANTT_2}}
+<div class="leyenda">{{LEYENDA}}</div>
+<figcaption>Diagrama de Gantt por actividad (2/2): frontend, integración, pruebas, correcciones, despliegue, documentación y entrega.</figcaption>
+</figure>
+</section>
+
+<!-- ============================================================ 5 -->
+<h2 id="s5">5. Recursos y decisiones técnicas</h2>
+<div class="pie-tabla">Tecnologías, herramientas, equipos y servicios</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:18%">Recurso</th><th style="width:30%">Elección</th><th>Justificación</th></tr></thead>
+  <tbody>
+    <tr><td>Videojuego</td><td>Python 3.11, pygame-ce y pygbag (WebAssembly)</td><td>El juego ya existe en Python; pygbag lo ejecuta en el navegador sin reescribirlo, lo que respeta la jugabilidad original.</td></tr>
+    <tr><td>Frontend</td><td>HTML5, CSS3 y JavaScript con módulos ES; Chart.js para gráficas; anime.js para animaciones</td><td>No requiere compilación ni framework adicional; los módulos ES permiten componentes reutilizables (layout, tabla, CRUD, cliente de API). Chart.js cubre las gráficas dinámicas con poco código.</td></tr>
+    <tr><td>Backend</td><td>Python 3.11 con FastAPI, Uvicorn, PyMySQL, bcrypt, PyJWT y Pydantic</td><td>Mismo lenguaje que el juego. FastAPI valida las entradas con Pydantic, genera la documentación OpenAPI (Swagger) de forma automática y facilita aplicar autenticación y roles por endpoint. PyMySQL con SQL explícito da control de transacciones y bloqueos.</td></tr>
+    <tr><td>Gestor de base de datos</td><td>MariaDB 10.6+ (XAMPP en desarrollo; imagen oficial en Docker)</td><td>Motor relacional libre con InnoDB (claves foráneas, transacciones ACID), CHECK y vistas; compatible con MySQL; el equipo ya usa XAMPP en clase.</td></tr>
+    <tr><td>Pagos (simulados)</td><td>Google Pay API for Web, entorno TEST</td><td>Permite demostrar el flujo completo de pago sin cobrar dinero real.</td></tr>
+    <tr><td>Diseño</td><td>diagrams.net / Figma (wireframes); Mermaid (ER y secuencia)</td><td>Gratuitos; los diagramas en Mermaid se versionan como texto en el repositorio.</td></tr>
+    <tr><td>Pruebas</td><td>pytest con TestClient de FastAPI y una BD de pruebas aislada; DevTools del navegador para diseño responsivo</td><td>Pruebas repetibles de API, reglas y transacciones contra MariaDB real, sin alterar los datos de desarrollo.</td></tr>
+    <tr><td>Control de versiones y organización</td><td>Git + GitHub (ramas <code>main</code>, <code>develop</code> y <code>feature/*</code>, pull requests) y GitHub Projects</td><td>Historial de participación por integrante, revisión cruzada antes de integrar y tablero con una tarjeta por actividad.</td></tr>
+    <tr><td>Despliegue</td><td>Docker, Docker Compose, Nginx y Portainer (stack desde el repositorio de GitHub)</td><td>El mismo entorno en cualquier servidor; Nginx sirve el frontend y el juego y redirige <code>/api</code> a la API.</td></tr>
+    <tr><td>Equipos</td><td>3 computadoras personales (Windows) y un servidor con Docker y Portainer</td><td>Desarrollo local de cada integrante; el servidor aloja la versión desplegada.</td></tr>
+    <tr><td>Comunicación y editor</td><td>Microsoft Teams y chat del equipo; Visual Studio Code</td><td>Reuniones semanales y seguimiento diario; editor común con soporte para Python, JS y SQL.</td></tr>
+  </tbody>
+</table>
+<div class="caja"><b class="titulo">Convenciones de trabajo</b>
+<p>Commits con Conventional Commits (<code>feat</code>, <code>fix</code>, <code>test</code>, <code>docs</code>, <code>refactor</code>) y el ID de la actividad en el mensaje (por ejemplo, <code>feat(api): compra transaccional (A20)</code>). Una rama por actividad (<code>feature/A20-tienda</code>). Ningún cambio llega a <code>develop</code> sin la revisión de otro integrante.</p></div>
+
+<!-- ============================================================ 6 -->
+<h2 id="s6">6. Riesgos y seguimiento</h2>
+<h3 id="s6-1">6.1 Registro de riesgos</h3>
+<div class="pie-tabla">Riesgos del proyecto</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:4%">ID</th><th style="width:19%">Riesgo</th><th style="width:8%">Probabilidad</th><th style="width:7%">Impacto</th><th style="width:24%">Medida preventiva</th><th style="width:24%">Acción de respuesta</th><th>Responsable</th></tr></thead>
+  <tbody>
+    <tr><td>RG1</td><td>El juego no funciona en el navegador o falla al conectarse con la API (tecnología nueva para el equipo)</td><td>Media</td><td>Alto</td><td>Compilar el juego con pygbag en la segunda semana (A28) para detectar problemas antes de integrar.</td><td>Ajustar una plantilla propia de pygbag; para la demo, usar el juego de escritorio mientras se corrige.</td><td>Marco M.</td></tr>
+    <tr><td>RG2</td><td>Participación desigual o commits concentrados en una persona</td><td>Media</td><td>Alto</td><td>Una tarjeta y una rama por actividad con responsable; revisar el historial de Git en cada reunión semanal.</td><td>Redistribuir actividades pendientes en la siguiente reunión y registrar el cambio.</td><td>José G.</td></tr>
+    <tr><td>RG3</td><td>Saldos inconsistentes por operaciones simultáneas o fallos a mitad de una operación</td><td>Baja</td><td>Alto</td><td>Transacciones con bloqueo de saldo (<code>SELECT … FOR UPDATE</code>) y CHECK del libro mayor; pruebas de ROLLBACK.</td><td>Corregir con prioridad máxima y volver a ejecutar las pruebas de transacciones.</td><td>Javier R.</td></tr>
+    <tr><td>RG4</td><td>Conflictos al integrar ramas al final</td><td>Media</td><td>Medio</td><td>Integrar a <code>develop</code> al menos dos veces por semana con pull requests pequeños.</td><td>Sesión de integración conjunta antes del hito más cercano.</td><td>Javier R.</td></tr>
+    <tr><td>RG5</td><td>Retrasos por carga académica de otras materias (exámenes y entregas)</td><td>Alta</td><td>Medio</td><td>Hitos semanales y holgura del 02/11 al 05/11; priorizar los requisitos obligatorios.</td><td>Posponer mejoras opcionales (animaciones y rediseño visual), nunca requisitos obligatorios.</td><td>José G.</td></tr>
+    <tr><td>RG6</td><td>Falla del despliegue en Docker/Portainer o servidor no disponible</td><td>Media</td><td>Medio</td><td>Iniciar el despliegue el 28/10 (A44), no al final; documentar la instalación local.</td><td>Demostración local con XAMPP siguiendo el README.</td><td>José G.</td></tr>
+    <tr><td>RG7</td><td>Servicios externos no disponibles (CDN de pygame-web, Google Pay, cdnjs)</td><td>Baja</td><td>Medio</td><td>Google Pay en modo TEST con opción de pago simulado; verificar los servicios antes de la demo.</td><td>Usar el pago simulado y el juego de escritorio durante la demostración.</td><td>Javier R.</td></tr>
+    <tr><td>RG8</td><td>Las apuestas y el gachapón podrían interpretarse como juego de azar con dinero real</td><td>Baja</td><td>Alto</td><td>Monedas virtuales sin valor, pagos solo en TEST, límites de juego responsable y probabilidades públicas.</td><td>Desactivar la compra de monedas fuera del entorno de pruebas.</td><td>Javier R.</td></tr>
+  </tbody>
+</table>
+<h3 id="s6-2">6.2 Seguimiento del avance</h3>
+<ul>
+  <li><b>Reuniones:</b> una reunión semanal de 30 minutos los lunes por Teams para revisar el avance contra este plan, los bloqueos y el historial de Git. Además, dos revisiones breves por chat (martes y jueves) con el formato “qué terminé, qué sigue, qué me bloquea”.</li>
+  <li><b>Herramienta de organización:</b> GitHub Projects con las columnas <i>Por hacer</i>, <i>En proceso</i>, <i>En revisión</i> y <i>Hecho</i>. Cada actividad A01–A51 es una tarjeta con responsable, fechas y criterio de terminado.</li>
+  <li><b>Revisión de entregables:</b> cada viernes (hitos H1–H4) el responsable muestra lo terminado y otro integrante lo verifica contra el criterio de terminado. Una actividad solo pasa a <i>Hecho</i> cuando su pull request se integra a <code>develop</code> con sus pruebas aprobadas.</li>
+  <li><b>Estados:</b> Planeado, En proceso, En revisión, Terminado, Retrasado y Cancelado.</li>
+  <li><b>Registro de cambios al cronograma:</b> las fechas de este documento son la <b>línea base</b> y no se sobrescriben. Todo cambio se anota en la bitácora de cambios con su justificación, y el seguimiento final compara la fecha planeada contra la fecha real de cada actividad (sección 5 del PDF final).</li>
+</ul>
+<div class="pie-tabla">Formato de la bitácora de cambios al cronograma</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:10%">Fecha</th><th style="width:8%">Actividad</th><th style="width:11%">Fecha original</th><th style="width:11%">Fecha nueva</th><th>Motivo del cambio</th><th style="width:18%">Impacto en otras actividades</th><th style="width:12%">Aprobado por</th></tr></thead>
+  <tbody>
+    <tr><td>dd/mm/aaaa</td><td>A##</td><td>dd/mm/aaaa</td><td>dd/mm/aaaa</td><td>(se llenará durante el desarrollo)</td><td>A## desplazada…</td><td>Equipo</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================================ 7 -->
+<h2 id="s7">7. Plan de pruebas y entrega</h2>
+<h3 id="s7-1">7.1 Estrategia de pruebas</h3>
+<p>Las pruebas de API se automatizarán con pytest y el TestClient de FastAPI contra una base de datos de pruebas aislada (<code>uma_racing_pruebas</code>) que se recrea desde <code>schema.sql</code> y <code>seed.sql</code> en cada ejecución. Cada responsable escribe las pruebas de sus módulos al terminar la actividad de backend correspondiente; José G. coordina la suite y la matriz de pruebas.</p>
+<div class="pie-tabla">Plan de pruebas</div>
+<table class="tabla compacta">
+  <thead><tr><th style="width:14%">Tipo</th><th style="width:28%">Qué se comprobará</th><th style="width:22%">Cómo</th><th style="width:11%">Responsable</th><th style="width:10%">Cuándo</th><th>Evidencia esperada</th></tr></thead>
+  <tbody>
+    <tr><td>Funciones principales</td><td>Caso exitoso de cada endpoint y de cada flujo de módulo</td><td>pytest + TestClient</td><td>Dueño del módulo</td><td>A20–A27</td><td>Pruebas en <code>backend/tests</code></td></tr>
+    <tr><td>Permisos</td><td>401 sin token o con token revocado; 403 con rol incorrecto; recursos ajenos no visibles</td><td>pytest con cuentas de cada rol</td><td>Javier R.</td><td>A18, A40</td><td>Casos de permisos aprobados</td></tr>
+    <tr><td>Validaciones</td><td>Campos vacíos, formatos inválidos, rangos y campos no permitidos (422 con detalle); validación en formularios</td><td>pytest + prueba manual de formularios</td><td>Dueño del módulo</td><td>A40, A41</td><td>Casos de datos inválidos y capturas</td></tr>
+    <tr><td>Reglas de negocio</td><td>Al menos un caso que intente violar cada regla (saldo, límites diarios, antitrampa, último administrador, etc.)</td><td>pytest</td><td>Dueño del módulo</td><td>A40</td><td>Un caso por regla en la matriz</td></tr>
+    <tr><td>Transacciones</td><td>La compra, el pago, la apuesta y la tirada se aplican completas (COMMIT) o no cambian nada (ROLLBACK)</td><td>pytest comparando saldo e inventario antes y después</td><td>Javier R.</td><td>A20, A40</td><td>Casos de éxito y de fallo con saldo sin cambios</td></tr>
+    <tr><td>Integración interfaz–API–BD</td><td>Flujo punta a punta: registro → login → jugar → partida registrada → compra → historial y reportes actualizados</td><td>Prueba manual guiada sobre <code>develop</code> integrado</td><td>Marco M.</td><td>A39, A41</td><td>Capturas de cada paso y registros en la BD</td></tr>
+    <tr><td>Interfaz</td><td>Diseño responsivo (1366, 820 y 390 px), estados de carga, vacío, error y éxito, y confirmaciones</td><td>DevTools del navegador</td><td>Marco M.</td><td>A41</td><td>Capturas por resolución</td></tr>
+    <tr><td>Errores y seguridad</td><td>BD no disponible (mensaje sin trazas), inyección SQL, contraseñas con hash, datos inexistentes y duplicados</td><td>pytest + prueba manual con la BD detenida</td><td>José G.</td><td>A40, A41</td><td>Casos aprobados en la matriz</td></tr>
+    <tr><td>Aceptación</td><td>Criterios de aceptación de cada módulo</td><td>Demostración interna al congelar funciones</td><td>Equipo</td><td>30/10 (H4)</td><td>Lista de criterios verificada</td></tr>
+  </tbody>
+</table>
+<p>Cobertura mínima planeada según los lineamientos: caso exitoso, datos inválidos, permisos insuficientes, registro inexistente, duplicidad, regla de negocio crítica, error de conexión o del servidor, operación transaccional y diseño responsivo. Los defectos se registrarán en la matriz de pruebas (A42) con su caso, su resultado y la corrección (A43).</p>
+<h3 id="s7-2">7.2 Lista de verificación para la entrega final</h3>
+<ul class="check">
+  <li>Sistema funcional (desplegado y en local) con todos los módulos integrados.</li>
+  <li>Repositorio con historial de participación de los 3 integrantes.</li>
+  <li>Ramas integradas en <code>develop</code> y <code>main</code> con la etiqueta <code>v1.0.0</code>.</li>
+  <li>Scripts <code>schema.sql</code>, <code>seed.sql</code> y <code>seed_demo.sql</code> que crean la BD desde cero.</li>
+  <li>Datos de prueba y cuentas para cada rol.</li>
+  <li><code>.env.example</code> y <code>.env</code> excluido del repositorio.</li>
+  <li>Documentación de API (Swagger y <code>docs/api.md</code>).</li>
+  <li>README completo con capturas.</li>
+  <li>Instrucciones de instalación probadas en una computadora limpia.</li>
+  <li>Suite de pruebas aprobada y matriz de pruebas con resultados.</li>
+  <li>PDF de documentación con las 16 secciones de los lineamientos.</li>
+  <li>Seguimiento del avance real contra este plan.</li>
+  <li>Demostración ensayada con guion y datos de prueba.</li>
+  <li>Entrega en Teams en la fecha indicada (06/11/2026).</li>
+</ul>
+
+<script>
+  window.addEventListener("load", async () => {
+    const caras = ['400 10pt "Noto Serif"', '700 10pt "Noto Serif"', 'italic 400 10pt "Noto Serif"', '400 10pt "Noto Sans"',
+                   '600 10pt "Noto Sans"', '700 10pt "Noto Sans"', '400 10pt "Noto Sans Mono"'];
+    await Promise.all(caras.map(c => document.fonts.load(c, "Áa0")));
+    await document.fonts.ready;
+    window.__listo = true;
+  });
+</script>
+</body>
+</html>

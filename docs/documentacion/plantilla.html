@@ -124,7 +124,7 @@
     <tr><td>Grupo</td><td>C</td></tr>
     <tr><td>Fecha de entrega</td><td>06/11/2026</td></tr>
     <tr><td>Versión del documento</td><td>0.2 (borrador) — 28/10/2026</td></tr>
-    <tr><td>Repositorio Git</td><td><a href="https://github.com/Perrullo/Uma-Racing">github.com/Perrullo/Uma-Racing</a> (rama <code>develop</code>)</td></tr>
+    <tr><td>Repositorio Git</td><td><a href="https://github.com/JavierRodriguezzz/Uma-Racing">github.com/JavierRodriguezzz/Uma-Racing</a> (rama <code>develop</code>)</td></tr>
     <tr><td>Sistema desplegado</td><td><span class="pendiente">[URL pendiente: despliegue con Docker + Portainer en preparación]</span></td></tr>
   </table>
   <div class="pie-portada">Proyecto académico sin fines de lucro. Los personajes y la música pertenecen a sus respectivos dueños. La publicidad es simulada y las monedas son virtuales.</div>
@@ -1026,7 +1026,7 @@ flowchart LR
 </table>
 <h3 id="s14-2">14.2 Instalación y ejecución local</h3>
 <pre># 1. Clonar el repositorio e instalar dependencias
-git clone https://github.com/Perrullo/Uma-Racing.git
+git clone https://github.com/JavierRodriguezzz/Uma-Racing.git
 cd Uma-Racing
 python -m venv backend/.venv
 backend/.venv/Scripts/activate            # Linux/Mac: source backend/.venv/bin/activate
@@ -1070,7 +1070,7 @@ uvicorn app.main:app --reload --port 8000</pre>
 <p class="nota"><span class="pendiente">Estado: pendiente. Al desplegarse, agregar aquí la URL pública, los archivos Dockerfile y docker-compose.yml y una captura de Portainer.</span></p>
 <h3 id="s14-4">14.4 Evidencia de trabajo colaborativo y Git</h3>
 <ul>
-  <li><b>Repositorio:</b> <a href="https://github.com/Perrullo/Uma-Racing">https://github.com/Perrullo/Uma-Racing</a></li>
+  <li><b>Repositorio:</b> <a href="https://github.com/JavierRodriguezzz/Uma-Racing">https://github.com/JavierRodriguezzz/Uma-Racing</a> (público). El juego base proviene de <a href="https://github.com/Perrullo/Uma-Racing">github.com/Perrullo/Uma-Racing</a>; como esa cuenta no dio permisos de escritura, el proyecto web se publicó el 28/10/2026 en este repositorio con todo su historial.</li>
   <li><b>Ramas:</b> <code>main</code> (versión del juego base) y <code>develop</code> (rama de integración del proyecto web). <span class="pendiente">Recomendado: ramas de función por integrante (<code>feature/…</code>) que se integran a <code>develop</code> mediante pull request.</span></li>
   <li><b>Convención de commits:</b> Conventional Commits (<code>feat</code>, <code>fix</code>, <code>test</code>, <code>docs</code>, <code>refactor</code>, <code>perf</code>, <code>style</code>) con el ámbito entre paréntesis (<code>db</code>, <code>api</code>, <code>web</code>, <code>juego</code>).</li>
   <li><b>Commits significativos:</b> <code>ae0da38</code> (esquema normalizado), <code>8dfab45</code> (API con JWT y roles), <code>c5fc71a</code> (21 pruebas), <code>fba91e4</code> (monetización), <code>e4b62e9</code> (corrección de carga del juego)., <code>ea6a8d4</code> (dormitorio 3D).</li>

@@ -69,7 +69,7 @@ El frontend y el juego **nunca** acceden a la base de datos: todo pasa por la AP
 ## Instalación
 
 ```bash
-git clone https://github.com/Perrullo/Uma-Racing.git
+git clone https://github.com/JavierRodriguezzz/Uma-Racing.git
 cd Uma-Racing
 python -m venv backend/.venv
 backend/.venv/Scripts/activate        # Windows  (Linux/Mac: source backend/.venv/bin/activate)

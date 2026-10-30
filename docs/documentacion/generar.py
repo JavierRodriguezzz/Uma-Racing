@@ -6,7 +6,8 @@
 - El PDF se imprime con Chrome headless (CDP) y el índice recibe los números de página en una segunda pasada.
 
 Uso (desde la raíz del repo, con el entorno virtual del backend):
-    backend/.venv/Scripts/python docs/documentacion/generar.py
+    backend/.venv/Scripts/python docs/documentacion/generar.py            # documento completo (16 secciones)
+    backend/.venv/Scripts/python docs/documentacion/generar.py --avance   # entrega parcial: secciones 1–10 + anexos A–D
 Requiere: Google Chrome, websockets (incluido en uvicorn[standard]) y pypdf (pip install pypdf).
 """
 import asyncio
@@ -31,7 +32,45 @@ SALIDA_PDF = DOC / "UmaRacing_Documentacion.pdf"
 CHROME = os.getenv("CHROME", r"C:\Program Files\Google\Chrome\Application\chrome.exe")
 PUERTO = 9335
 
+# Entrega parcial: el profesor pidió la documentación hasta "Diseño y documentación de API" (sección 10).
+AVANCE = "--avance" in sys.argv
+if AVANCE:
+    SALIDA_HTML = DOC / "documentacion_avance.html"
+    SALIDA_PDF = DOC / "UmaRacing_Documentacion_Avance.pdf"
+AVANCE_VERSION = "0.3 (avance: secciones 1–10) — 30/10/2026"
+AVANCE_FILA = ('<tr><td>0.3</td><td>30/10/2026</td><td>Javier A. Rodríguez Morales</td><td>Entrega de avance: '
+               'secciones 1 a 10 (hasta Diseño y documentación de la API) y anexos A–D. Las secciones de módulos, seguridad, '
+               'pruebas, instalación, resultados y la matriz de trazabilidad se entregan en la versión final.</td></tr>')
+AVANCE_CAJA = ('<div class="caja"><b class="titulo">Alcance de esta entrega</b><p>Esta versión de avance comprende las '
+               'secciones 1 a 10 de los lineamientos (hasta <i>Diseño y documentación de la API</i>) y los anexos técnicos '
+               'que estas citan. Las referencias a las secciones 11 a 16 (módulos, seguridad, pruebas, instalación y control '
+               'de versiones, resultados y trazabilidad) corresponden a la versión final del documento.</p></div>')
+
 e = html.escape
+
+
+def recortar_avance(texto):
+    """Deja las secciones 1–10 y los anexos A–D; mueve a los anexos las figuras citadas que estaban en las secciones 11+."""
+    i11 = texto.index("<!-- ============================================================ 11.")
+    i16 = texto.index('<h2 id="s16">')
+    i_e = texto.index('<h3 id="s16-e"')
+    i_fin = texto.index('<script type="module">')
+    quitado = texto[i11:i16]
+    conservado = texto[:i11] + texto[i16:i_e]
+    citadas = set(re.findall(r'data-fig="([\w-]+)"', conservado))
+    figuras = [m.group(0) for m in re.finditer(r'<figure id="([\w-]+)".*?</figure>', quitado, re.S) if m.group(1) in citadas]
+    extra = ""
+    if figuras:
+        figuras = [re.sub(r'\s*class="angosta"', "", f) for f in figuras]
+        pares = ["\n".join(figuras[i:i + 2]) for i in range(0, len(figuras), 2)]
+        extra = "\n".join(f'<div class="dos">\n{p}\n</div>' for p in pares)
+    texto = conservado + extra + "\n\n" + texto[i_fin:]
+    texto = texto.replace('<h2 id="s16">16. Anexos</h2>', '<h2 id="s16">11. Anexos</h2>')
+    texto = re.sub(r"(<td>Versión del documento</td><td>)[^<]*", r"\g<1>" + AVANCE_VERSION, texto, count=1)
+    texto = texto.replace("    <tr><td><span class=\"pendiente\">1.0</span>", "    " + AVANCE_FILA + "\n    <tr><td><span class=\"pendiente\">1.0</span>", 1)
+    texto = texto.replace('<h3 class="h2-sin-salto" style="font-size:14pt;color:var(--azul);margin-top:22px">Índice</h3>',
+                          AVANCE_CAJA + '\n<h3 class="h2-sin-salto" style="font-size:14pt;color:var(--azul);margin-top:22px">Índice</h3>', 1)
+    return texto
 
 
 # --------------------------------------------------------------------------- Esquema de BD
@@ -251,6 +290,8 @@ def construir_html(paginas_toc=None):
     tablas = leer_esquema()
     assert len(tablas) == 26, f"Se esperaban 26 tablas y se leyeron {len(tablas)}"
     texto = PLANTILLA.read_text(encoding="utf-8")
+    if AVANCE:
+        texto = recortar_avance(texto)
     reemplazos = {"DICCIONARIO": diccionario_html(tablas),
                   "ER_COMPLETO": mermaid_er(tablas, [t["nombre"] for t in tablas], con_atributos=False, direccion="LR")}
     for clave, grupo in GRUPOS_ER.items():

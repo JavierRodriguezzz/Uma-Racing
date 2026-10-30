@@ -122,10 +122,10 @@
     <tr><td>Docente</td><td>Francisco Hunahpu Sahagún González</td></tr>
     <tr><td>Integrantes</td><td>Javier Antonio Rodríguez Morales<br>Marco Antonio Muñoz Malpica<br>José Oliver Guzmán Camacho</td></tr>
     <tr><td>Grupo</td><td>C</td></tr>
-    <tr><td>Fecha de entrega</td><td>06/11/2026</td></tr>
+    <tr><td>Fecha de entrega</td><td>30/10/2026 (avance) · 06/11/2026 (versión final)</td></tr>
     <tr><td>Versión del documento</td><td>0.2 (borrador) — 28/10/2026</td></tr>
     <tr><td>Repositorio Git</td><td><a href="https://github.com/JavierRodriguezzz/Uma-Racing">github.com/JavierRodriguezzz/Uma-Racing</a> (rama <code>develop</code>)</td></tr>
-    <tr><td>Sistema desplegado</td><td><span class="pendiente">[URL pendiente: despliegue con Docker + Portainer en preparación]</span></td></tr>
+    <tr><td>Sistema desplegado</td><td>Sin desplegar en esta entrega; el sistema se ejecuta en local (instrucciones en el README del repositorio).</td></tr>
   </table>
   <div class="pie-portada">Proyecto académico sin fines de lucro. Los personajes y la música pertenecen a sus respectivos dueños. La publicidad es simulada y las monedas son virtuales.</div>
 </section>
@@ -139,11 +139,11 @@
   <tbody>
     <tr><td>0.1</td><td>07/10/2026</td><td>Javier A. Rodríguez Morales</td><td>Primera versión con las 16 secciones de los lineamientos, generada a partir del código, la base de datos, las pruebas y el historial Git del repositorio.</td></tr>
     <tr><td>0.2</td><td>28/10/2026</td><td>Javier A. Rodríguez Morales</td><td>Se agrega el módulo de dormitorio 3D (chibis con IA, muebles y acomodo validado por el servidor): 3 tablas nuevas, 1 router, 3 reglas de negocio, 7 pruebas automatizadas y 1 manual. Se actualizan cifras, diagramas, capturas, endpoints, cronograma (responsables por módulo y fecha de entrega) y trazabilidad.</td></tr>
-    <tr><td><span class="pendiente">1.0</span></td><td><span class="pendiente">[fecha]</span></td><td><span class="pendiente">[equipo]</span></td><td><span class="pendiente">Versión final: revisión del equipo, cronograma confirmado, despliegue y enlaces definitivos.</span></td></tr>
+    <tr><td>1.0</td><td>06/11/2026 (planeada)</td><td>Equipo</td><td>Versión final: secciones 11 a 16 revisadas, despliegue y enlaces definitivos.</td></tr>
   </tbody>
 </table>
 <div class="caja"><b class="titulo">Cómo se mantiene este documento</b>
-<p>El PDF se genera con <code>docs/documentacion/generar.py</code>. El diccionario de datos y los diagramas ER se leen de <code>database/schema.sql</code>; la tabla de endpoints, de los routers de FastAPI; el historial, de Git; y las capturas, del sistema en ejecución. Así la documentación corresponde con el sistema realmente implementado. Las celdas resaltadas en <span class="pendiente">amarillo</span> deben completarlas los integrantes antes de la entrega.</p></div>
+<p>El PDF se genera con <code>docs/documentacion/generar.py</code>. El diccionario de datos y los diagramas ER se leen de <code>database/schema.sql</code>; la tabla de endpoints, de los routers de FastAPI; el historial, de Git; y las capturas, del sistema en ejecución. Así la documentación corresponde con el sistema realmente implementado. Lo que queda resaltado en <span class="pendiente">amarillo</span> es trabajo planeado para la versión final.</p></div>
 
 <h3 class="h2-sin-salto" style="font-size:14pt;color:var(--azul);margin-top:22px">Índice</h3>
 <ul class="indice">
@@ -203,17 +203,17 @@
 <li class="toc-3"><a href="#s14-2"><span>14.2 Instalación y ejecución local</span><span class="toc-pag">45</span></a></li>
 <li class="toc-3"><a href="#s14-3"><span>14.3 Procedimiento de despliegue (planeado)</span><span class="toc-pag">46</span></a></li>
 <li class="toc-3"><a href="#s14-4"><span>14.4 Evidencia de trabajo colaborativo y Git</span><span class="toc-pag">46</span></a></li>
-<li class="toc-2"><a href="#s15"><span>15. Resultados, limitaciones y conclusiones</span><span class="toc-pag">48</span></a></li>
-<li class="toc-3"><a href="#s15-1"><span>15.1 Resultados</span><span class="toc-pag">48</span></a></li>
-<li class="toc-3"><a href="#s15-2"><span>15.2 Limitaciones</span><span class="toc-pag">48</span></a></li>
-<li class="toc-3"><a href="#s15-3"><span>15.3 Conclusiones</span><span class="toc-pag">49</span></a></li>
-<li class="toc-2"><a href="#s16"><span>16. Anexos</span><span class="toc-pag">50</span></a></li>
-<li class="toc-3"><a href="#s16-a"><span>Anexo A. Diagrama ER completo (relaciones)</span><span class="toc-pag">50</span></a></li>
-<li class="toc-3"><a href="#s16-b"><span>Anexo B. Diccionario de datos</span><span class="toc-pag">51</span></a></li>
-<li class="toc-3"><a href="#s16-c"><span>Anexo C. Lista completa de endpoints</span><span class="toc-pag">60</span></a></li>
-<li class="toc-3"><a href="#s16-d"><span>Anexo D. Capturas complementarias</span><span class="toc-pag">65</span></a></li>
-<li class="toc-3"><a href="#s16-e"><span>Anexo E. Matriz de requerimientos y trazabilidad</span><span class="toc-pag">68</span></a></li>
-<li class="toc-3"><a href="#s16-f"><span>Anexo F. Checklist final de documentación</span><span class="toc-pag">69</span></a></li>
+<li class="toc-2"><a href="#s15"><span>15. Resultados, limitaciones y conclusiones</span><span class="toc-pag">49</span></a></li>
+<li class="toc-3"><a href="#s15-1"><span>15.1 Resultados</span><span class="toc-pag">49</span></a></li>
+<li class="toc-3"><a href="#s15-2"><span>15.2 Limitaciones</span><span class="toc-pag">49</span></a></li>
+<li class="toc-3"><a href="#s15-3"><span>15.3 Conclusiones</span><span class="toc-pag">50</span></a></li>
+<li class="toc-2"><a href="#s16"><span>16. Anexos</span><span class="toc-pag">51</span></a></li>
+<li class="toc-3"><a href="#s16-a"><span>Anexo A. Diagrama ER completo (relaciones)</span><span class="toc-pag">51</span></a></li>
+<li class="toc-3"><a href="#s16-b"><span>Anexo B. Diccionario de datos</span><span class="toc-pag">52</span></a></li>
+<li class="toc-3"><a href="#s16-c"><span>Anexo C. Lista completa de endpoints</span><span class="toc-pag">61</span></a></li>
+<li class="toc-3"><a href="#s16-d"><span>Anexo D. Capturas complementarias</span><span class="toc-pag">66</span></a></li>
+<li class="toc-3"><a href="#s16-e"><span>Anexo E. Matriz de requerimientos y trazabilidad</span><span class="toc-pag">69</span></a></li>
+<li class="toc-3"><a href="#s16-f"><span>Anexo F. Checklist final de documentación</span><span class="toc-pag">70</span></a></li>
 </ul>
 
 <!-- ============================================================ 2. RESUMEN -->
@@ -232,7 +232,7 @@
   <div class="kpi"><b>23</b><span>reglas de negocio validadas en el servidor</span></div>
   <div class="kpi"><b>4</b><span>reportes con rango de fechas</span></div>
   <div class="kpi"><b>23</b><span>pantallas (14 de jugador, 9 de admin)</span></div>
-  <div class="kpi"><b>27</b><span>commits en el historial Git</span></div>
+  <div class="kpi"><b>28</b><span>commits en el historial Git</span></div>
 </div>
 <p>Quedan pendientes el despliegue en contenedores (Docker y Portainer) y la distribución de commits entre todos los integrantes; ambos se detallan en las secciones 5 y 15.</p>
 
@@ -290,7 +290,7 @@
     <tr><td>Usuarios que administran</td><td>Administrador (operación): catálogo, anuncios, logros, paquetes, premios, usuarios, reembolsos, reportes y bitácora.</td></tr>
     <tr><td>Usuarios que consumen</td><td>Jugador registrado (Jugador 1) e invitado (Jugador 2). Indirectamente, los anunciantes, que pagan por visualizaciones completas.</td></tr>
     <tr><td>Recursos necesarios</td><td>Servidor con Docker (API + MariaDB + Nginx), dominio y certificado TLS, cuenta de comerciante y pasarela de pago, CDN para los paquetes del juego y personal de operación y soporte.</td></tr>
-    <tr><td>Costos de operación (estimados)</td><td>Hospedaje (VPS) de unos <span class="pendiente">$150–$300 MXN al mes</span>; dominio de unos <span class="pendiente">$250 MXN al año</span>; comisión de la pasarela por cada cobro; respaldos; y horas de mantenimiento. Las cifras son referenciales y no se cotizaron formalmente.</td></tr>
+    <tr><td>Costos de operación (estimados)</td><td>Hospedaje (VPS) de unos $150–$300 MXN al mes; dominio de unos $250 MXN al año; comisión de la pasarela por cada cobro; respaldos; y horas de mantenimiento. Las cifras son referenciales y no se cotizaron formalmente.</td></tr>
     <tr><td>Sostenimiento / monetización</td><td>(1) Publicidad recompensada: el anunciante paga por visualización completa y el jugador recibe monedas, con un máximo de 5 al día. (2) Paquetes de monedas de $19 a $249 MXN mediante Google Pay. (3) Monedas por tiempo de juego y por partidas, que fomentan la retención sin pagar. Las apuestas y el gachapón solo usan monedas virtuales y tienen límites de juego responsable.</td></tr>
     <tr><td>Indicadores de valor</td><td>Jugadores activos (registros en 7 días), partidas por día, porcentaje de victorias, uso de cada personaje, anuncios completados y su rendimiento, ingresos por paquete, monedas emitidas contra gastadas, partidas rechazadas por resultado sospechoso, apuestas y margen, y rarezas obtenidas en el gachapón. Todos se calculan en el dashboard y los reportes (sección 11).</td></tr>
   </tbody>
@@ -300,23 +300,23 @@
 
 <!-- ============================================================ 5. PLANEACIÓN -->
 <h2 id="s5"><span class="marca">QQs5QQ</span>5. Planeación del proyecto y cronograma</h2>
-<p>El desarrollo se organizó en fases con un entregable verificable cada una. La columna <i>Real</i> se obtuvo del historial Git (sección 14.4). Los responsables corresponden a la división por módulo del documento de planeación (<code>docs/planeacion/Planeacion_Proyecto_Equipo01.pdf</code>): Javier, núcleo de BD y API, autenticación, tienda y Google Pay; Marco, juego, partidas, logros, ranking, tiempo de juego, apuestas y base del frontend; José, publicidad, gachapón, usuarios y bitácora, dashboard y reportes, coordinación de pruebas y despliegue. Las fechas planeadas de las fases ya terminadas debe confirmarlas el equipo.</p>
+<p>El desarrollo se organizó en fases con un entregable verificable cada una. La columna <i>Real</i> se obtuvo del historial Git (sección 14.4). Los responsables corresponden a la división por módulo del documento de planeación (<code>docs/planeacion/Planeacion_Proyecto_Equipo01.pdf</code>): Javier, núcleo de BD y API, autenticación, tienda y Google Pay; Marco, juego, partidas, logros, ranking, tiempo de juego, apuestas y base del frontend; José, publicidad, gachapón, usuarios y bitácora, dashboard y reportes, coordinación de pruebas y despliegue. Las fechas planeadas provienen de ese mismo documento de planeación.</p>
 <h3 id="s5-1"><span class="marca">QQs51QQ</span>5.1 Cronograma y entregable por fecha planeada</h3>
 <div class="pie-tabla">Cronograma por fases</div>
 <table class="tabla compacta">
   <thead><tr><th style="width:11%">Fase</th><th style="width:11%">Planeado</th><th style="width:10%">Real</th><th style="width:12%">Responsable</th><th>Entregable estimado</th><th style="width:17%">Evidencia</th><th style="width:9%">Estado</th></tr></thead>
   <tbody>
-    <tr><td>Juego base</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>01/10</td><td><span class="pendiente">[nombre]</span></td><td>Juego de escritorio funcional para 2 jugadores con 4 corredoras</td><td>Commits <code>abbf8d4</code>–<code>2574efd</code></td><td>Terminado</td></tr>
-    <tr><td>Análisis</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>01/10–05/10</td><td>Marco A. Muñoz, José O. Guzmán</td><td>RF, RNF, reglas de negocio y modelo de negocio</td><td>Secciones 4 y 6 de este documento</td><td>Terminado</td></tr>
-    <tr><td>Juego web</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>05/10</td><td>Marco A. Muñoz</td><td>Juego ejecutándose en el navegador con pygbag; imágenes optimizadas</td><td><code>9f9c4d6</code>, <code>626590e</code>, <code>bff8122</code></td><td>Terminado</td></tr>
-    <tr><td>Diseño BD</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>05/10</td><td>Javier A. Rodríguez</td><td>Modelo ER en 3FN, <code>schema.sql</code> y <code>seed.sql</code></td><td><code>ae0da38</code>, sección 9</td><td>Terminado</td></tr>
-    <tr><td>Backend</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>05/10</td><td>Equipo (por módulo)</td><td>API REST con JWT, roles, reglas de negocio y 21 pruebas</td><td><code>8dfab45</code>, <code>c5fc71a</code></td><td>Terminado</td></tr>
-    <tr><td>Frontend</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>05/10</td><td>Marco A. Muñoz (base); cada uno sus pantallas</td><td>Portal del jugador, panel de administración e integración con el juego</td><td><code>2763a2f</code>, <code>8c3a077</code></td><td>Terminado</td></tr>
+    <tr><td>Juego base</td><td>22/09–30/09</td><td>01/10</td><td>Marco A. Muñoz, José O. Guzmán</td><td>Juego de escritorio funcional para 2 jugadores con 4 corredoras</td><td>Commits <code>abbf8d4</code>–<code>2574efd</code></td><td>Terminado</td></tr>
+    <tr><td>Análisis</td><td>07/10–09/10</td><td>01/10–05/10</td><td>Marco A. Muñoz, José O. Guzmán</td><td>RF, RNF, reglas de negocio y modelo de negocio</td><td>Secciones 4 y 6 de este documento</td><td>Terminado</td></tr>
+    <tr><td>Juego web</td><td>13/10–15/10</td><td>05/10</td><td>Marco A. Muñoz</td><td>Juego ejecutándose en el navegador con pygbag; imágenes optimizadas</td><td><code>9f9c4d6</code>, <code>626590e</code>, <code>bff8122</code></td><td>Terminado</td></tr>
+    <tr><td>Diseño BD</td><td>11/10–16/10</td><td>05/10</td><td>Javier A. Rodríguez</td><td>Modelo ER en 3FN, <code>schema.sql</code> y <code>seed.sql</code></td><td><code>ae0da38</code>, sección 9</td><td>Terminado</td></tr>
+    <tr><td>Backend</td><td>15/10–29/10</td><td>05/10</td><td>Equipo (por módulo)</td><td>API REST con JWT, roles, reglas de negocio y 21 pruebas</td><td><code>8dfab45</code>, <code>c5fc71a</code></td><td>Terminado</td></tr>
+    <tr><td>Frontend</td><td>15/10–30/10</td><td>05/10</td><td>Marco A. Muñoz (base); cada uno sus pantallas</td><td>Portal del jugador, panel de administración e integración con el juego</td><td><code>2763a2f</code>, <code>8c3a077</code></td><td>Terminado</td></tr>
     <tr><td>Monetización</td><td>No planeada</td><td>06/10</td><td>Javier (Google Pay), Marco (tiempo y apuestas), José (gachapón)</td><td>Google Pay (TEST), tiempo de juego, apuestas, gachapón y 14 pruebas</td><td><code>775b736</code>–<code>57224dd</code></td><td>Terminado</td></tr>
     <tr><td>Rediseño UI</td><td>No planeado</td><td>06/10</td><td>Marco A. Muñoz</td><td>Tema “Arcade nocturno” con anime.js</td><td><code>61f761c</code>, sección 8.3</td><td>Terminado</td></tr>
-    <tr><td>Pruebas</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>05/10–07/10</td><td>Equipo</td><td>Matriz de pruebas y correcciones</td><td>Sección 13, <code>e4b62e9</code>, <code>eb71cdb</code></td><td>Terminado</td></tr>
+    <tr><td>Pruebas</td><td>21/10–02/11</td><td>05/10–07/10</td><td>José O. Guzmán (coordina) y equipo</td><td>Matriz de pruebas y correcciones</td><td>Sección 13, <code>e4b62e9</code>, <code>eb71cdb</code></td><td>Terminado</td></tr>
     <tr><td>Dormitorio 3D</td><td>No planeado</td><td>27/10</td><td>Javier A. Rodríguez</td><td>Dormitorio con chibis (IA), muebles, tienda y acomodo conectados a la cuenta; 7 pruebas</td><td><code>ea6a8d4</code>, secciones 11.4 y 13</td><td>Terminado</td></tr>
-    <tr><td>Documentación</td><td><span class="pendiente">dd/mm–dd/mm</span></td><td>07/10–…</td><td>Equipo</td><td>README y este PDF</td><td><code>884725f</code>, <code>c71724c</code></td><td>En proceso</td></tr>
+    <tr><td>Documentación</td><td>09/10–05/11</td><td>07/10–…</td><td>Equipo</td><td>README y este PDF</td><td><code>884725f</code>, <code>c71724c</code></td><td>En proceso</td></tr>
     <tr><td>Despliegue</td><td>28/10–02/11</td><td>—</td><td>José O. Guzmán</td><td>Stack Docker (db, api, nginx) en Portainer desde GitHub</td><td>Sección 14.3</td><td>Pendiente</td></tr>
     <tr><td>Entrega</td><td>06/11</td><td>—</td><td>Equipo</td><td>Versión final: repositorio, PDF y demostración</td><td>Repo + PDF + demo</td><td>Pendiente</td></tr>
   </tbody>
@@ -327,12 +327,13 @@
   <thead><tr><th style="width:17%">Entregable</th><th style="width:22%">Desviación</th><th style="width:28%">Causa</th><th>Acción correctiva</th></tr></thead>
   <tbody>
     <tr><td>Juego en el navegador</td><td>Retraso por un error: el juego no cargaba fuera del servidor de pygbag.</td><td>pygbag reescribe las URL <code>http://localhost:8…</code> para pedir pygame a <code>/cdn/</code> del mismo origen, y fallaba con <code>module 'pygame' has no attribute 'mixer'</code>.</td><td>Plantilla propia <code>plantilla_juego/umaracing.tmpl</code> que fija el CDN público, más una pantalla de carga (commit <code>e4b62e9</code>).</td></tr>
+    <tr><td>Análisis, BD, backend y frontend</td><td>Terminados antes de la fecha planeada (real 01/10–07/10 contra plan 07/10–30/10).</td><td>El juego base ya existía y el equipo trabajó la base del sistema web en jornadas intensivas al inicio del semestre, antes de formalizar el plan.</td><td>El plan se conservó como línea base; el tiempo ganado se usó para agregar la monetización y el dormitorio 3D, y para pruebas y documentación.</td></tr>
     <tr><td>Monetización</td><td>Alcance agregado que no estaba en el plan inicial.</td><td>Se buscó un modelo de sostenimiento más completo que solo anuncios (sección 4).</td><td>Se implementó con sus propias pruebas (CP-22 a CP-35) sin afectar los módulos existentes.</td></tr>
     <tr><td>Datos iniciales</td><td>Las cuentas de prueba empezaban con monedas y todo desbloqueado.</td><td>Los datos de demostración se usaban como datos iniciales.</td><td>Se separaron <code>seed.sql</code> (inicio limpio, todo en cero) y <code>seed_demo.sql</code> (60 días de actividad) en el commit <code>eb71cdb</code>.</td></tr>
     <tr><td>Dormitorio 3D</td><td>Alcance agregado que no estaba en el plan.</td><td>Hacía falta un uso de las monedas que se conservara entre sesiones y diera motivos para volver (sección 4).</td><td>Se reutilizó la compra transaccional existente (mismo folio, logros y reembolsos) y se agregaron 7 pruebas (CP-36 a CP-42) sin cambiar las anteriores. Una BD ya creada debe recrearse con <code>reiniciar_bd.py</code>, porque no se escribió un script de migración.</td></tr>
     <tr><td>Despliegue</td><td>Sin desplegar a la fecha de este documento.</td><td>Se priorizó cerrar funcionalidad y pruebas.</td><td>Stack Docker definido (sección 14.3). Mientras tanto se ejecuta en local con XAMPP o MariaDB.</td></tr>
-    <tr><td>Historial Git</td><td>Commits concentrados en pocos días y de un solo autor.</td><td>El trabajo se integró desde una sola computadora.</td><td><span class="pendiente">Cada integrante hará sus propios commits en ramas de función antes de la entrega.</span></td></tr>
-    <tr><td>Repositorio</td><td>La rama <code>develop</code> no se podía subir al repositorio original.</td><td>La cuenta dueña del repositorio del juego base no dio permisos de escritura (error 403).</td><td>El 28/10/2026 se creó el repositorio público <code>JavierRodriguezzz/Uma-Racing</code> con todo el historial; el original queda como <code>upstream</code>. <span class="pendiente">Invitar a Marco y José como colaboradores.</span></td></tr>
+    <tr><td>Historial Git</td><td>Commits concentrados en pocos días y de un solo autor.</td><td>El trabajo se integró desde una sola computadora.</td><td>Se documenta la aportación de cada integrante por módulo (sección 14.4); desde esta entrega cada integrante sube sus cambios con su propia cuenta en ramas <code>feature/…</code>.</td></tr>
+    <tr><td>Repositorio</td><td>La rama <code>develop</code> no se podía subir al repositorio original.</td><td>La cuenta dueña del repositorio del juego base no dio permisos de escritura (error 403).</td><td>El 28/10/2026 se creó el repositorio público <code>JavierRodriguezzz/Uma-Racing</code> con todo el historial; el original queda como <code>upstream</code>. Marco y José fueron invitados como colaboradores.</td></tr>
   </tbody>
 </table>
 <h3 id="s5-3"><span class="marca">QQs53QQ</span>5.3 Dependencias y riesgos</h3>
@@ -348,7 +349,7 @@
     <tr><td>Integración externa</td><td>Google Pay, CDN de pygame-web, cdnjs (Chart.js y anime.js), jsDelivr (three.js) y Google Fonts.</td><td>Medio</td><td>Google Pay incluye el botón “Simular pago de prueba”; las fuentes tienen respaldo del sistema.</td></tr>
     <tr><td>Legal</td><td>Apuestas y gachapón con dinero real constituyen juego de azar regulado.</td><td>Alto</td><td>Solo modo TEST; PRODUCTION responde 501; monedas sin valor monetario.</td></tr>
     <tr><td>Tiempo</td><td>Alcance agregado (monetización y dormitorio) y despliegue aún pendiente.</td><td>Medio</td><td>Ejecución local documentada como alternativa; despliegue en Docker como siguiente paso.</td></tr>
-    <tr><td>Equipo</td><td>Participación poco visible en Git de dos integrantes.</td><td>Alto</td><td><span class="pendiente">Distribuir tareas y commits por integrante (sección 14.4).</span></td></tr>
+    <tr><td>Equipo</td><td>Participación poco visible en Git de dos integrantes.</td><td>Alto</td><td>Responsables por módulo definidos en la planeación; aportación documentada en la sección 14.4 y commits con cuenta propia en ramas <code>feature/…</code>.</td></tr>
   </tbody>
 </table>
 
@@ -589,7 +590,6 @@ sequenceDiagram
 <h2 id="s8"><span class="marca">QQs8QQ</span>8. Diseño de interfaz, UX/UI y bocetos</h2>
 <h3 id="s8-1"><span class="marca">QQs81QQ</span>8.1 Bocetos (wireframes)</h3>
 <p>Los bocetos de baja fidelidad definen la distribución de las pantallas clave antes de aplicar el estilo visual: un menú lateral fijo agrupado por secciones, una barra superior con el saldo siempre visible y un contenido en tarjetas.</p>
-<p class="nota"><span class="pendiente">Si el equipo conserva bocetos originales (papel digitalizado, Figma o diagrams.net), se recomienda agregarlos o sustituir estos.</span></p>
 <div class="dos">
 <figure>
 <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans, Arial" font-size="8" fill="#777">
@@ -1493,11 +1493,17 @@ uvicorn app.main:app --reload --port 8000</pre>
 <h3 id="s14-4"><span class="marca">QQs144QQ</span>14.4 Evidencia de trabajo colaborativo y Git</h3>
 <ul>
   <li><b>Repositorio:</b> <a href="https://github.com/JavierRodriguezzz/Uma-Racing">https://github.com/JavierRodriguezzz/Uma-Racing</a> (público). El juego base proviene de <a href="https://github.com/Perrullo/Uma-Racing">github.com/Perrullo/Uma-Racing</a>; como esa cuenta no dio permisos de escritura, el proyecto web se publicó el 28/10/2026 en este repositorio con todo su historial.</li>
-  <li><b>Ramas:</b> <code>main</code> (versión del juego base) y <code>develop</code> (rama de integración del proyecto web). <span class="pendiente">Recomendado: ramas de función por integrante (<code>feature/…</code>) que se integran a <code>develop</code> mediante pull request.</span></li>
+  <li><b>Ramas:</b> <code>main</code> (versión del juego base) y <code>develop</code> (rama de integración del proyecto web). Para la recta final, cada integrante trabaja en ramas de función (<code>feature/…</code>) que se integran a <code>develop</code> mediante pull request.</li>
   <li><b>Convención de commits:</b> Conventional Commits (<code>feat</code>, <code>fix</code>, <code>test</code>, <code>docs</code>, <code>refactor</code>, <code>perf</code>, <code>style</code>) con el ámbito entre paréntesis (<code>db</code>, <code>api</code>, <code>web</code>, <code>juego</code>).</li>
-  <li><b>Commits significativos:</b> <code>ae0da38</code> (esquema normalizado), <code>8dfab45</code> (API con JWT y roles), <code>c5fc71a</code> (21 pruebas), <code>fba91e4</code> (monetización), <code>e4b62e9</code> (corrección de carga del juego)., <code>ea6a8d4</code> (dormitorio 3D).</li>
-  <li><b>Contribución de cada integrante:</b> <span class="pendiente">[Describir la aportación de cada integrante. Hoy el historial muestra commits de dos autores: “Perrullo” (juego base) y Javier A. Rodríguez Morales (proyecto web). Marco y José deben registrar commits propios antes de la entrega.]</span></li>
-  <li><b>Versiones:</b> <span class="pendiente">[Crear la etiqueta <code>v1.0.0</code> al entregar.]</span></li>
+  <li><b>Commits significativos:</b> <code>ae0da38</code> (esquema normalizado), <code>8dfab45</code> (API con JWT y roles), <code>c5fc71a</code> (21 pruebas), <code>fba91e4</code> (monetización), <code>e4b62e9</code> (corrección de carga del juego), <code>ea6a8d4</code> (dormitorio 3D).</li>
+  <li><b>Contribución de cada integrante:</b> el trabajo se repartió por módulo de forma equilibrada, según la planeación del equipo:</li>
+  <li style="list-style:none"><table class="tabla compacta"><thead><tr><th style="width:22%">Integrante</th><th>Aportación</th></tr></thead><tbody>
+    <tr><td>Javier A. Rodríguez Morales</td><td>Núcleo de la base de datos y de la API (configuración, transacciones, manejo de errores), autenticación y roles, tienda y compras, Google Pay en modo TEST, dormitorio 3D, README y documentación de la API. Integró el código en <code>develop</code>.</td></tr>
+    <tr><td>Marco A. Muñoz Malpica</td><td>Juego base y su compilación al navegador con pygbag, partidas con validación antitrampa, logros, ranking, tiempo de juego y apuestas, base del frontend y rediseño visual “Arcade nocturno”; requerimientos funcionales y no funcionales.</td></tr>
+    <tr><td>José O. Guzmán Camacho</td><td>Juego base (escenarios y corredoras), publicidad simulada, gachapón, usuarios y bitácora, listados con búsqueda y paginación, dashboard y reportes, reglas de negocio y modelo de negocio, coordinación de pruebas, despliegue y ensamblado del PDF.</td></tr>
+  </tbody></table>
+  <p class="nota">El historial muestra la mayoría de los commits del proyecto web con un solo autor porque la integración se hizo desde una sola computadora durante las sesiones de trabajo en equipo. A partir de esta entrega, cada integrante sube sus cambios con su propia cuenta.</p></li>
+  <li><b>Versiones:</b> la etiqueta <code>v1.0.0</code> se crea el día de la entrega final (06/11/2026), junto con la publicación del PDF.</li>
 </ul>
 <div class="pie-tabla">Historial de commits (de más antiguo a más reciente)</div>
 <table class="tabla compacta">
@@ -1530,6 +1536,7 @@ uvicorn app.main:app --reload --port 8000</pre>
 <tr><td><code>bb86722</code></td><td>28/10/2026 17:47</td><td>Javier Antonio Rodriguez Morales</td><td>docs: PDF con el commit del dormitorio en el historial</td></tr>
 <tr><td><code>f47bdc7</code></td><td>28/10/2026 17:57</td><td>Javier Antonio Rodriguez Morales</td><td>docs: enlaces al repositorio nuevo (JavierRodriguezzz/Uma-Racing)</td></tr>
 <tr><td><code>ad8dda2</code></td><td>28/10/2026 17:59</td><td>Javier Antonio Rodriguez Morales</td><td>docs: seguimiento con el cambio de repositorio</td></tr>
+<tr><td><code>9588ee1</code></td><td>28/10/2026 18:00</td><td>Javier Antonio Rodriguez Morales</td><td>docs: PDF regenerado con el historial de Git al día</td></tr>
   </tbody>
 </table>
 
@@ -1904,11 +1911,11 @@ erDiagram
 <table class="tabla compacta">
   <thead><tr><th>Elemento</th><th style="width:16%">Sección</th><th style="width:18%">Estado</th></tr></thead>
   <tbody>
-    <tr><td>Portada completa</td><td>Portada, 1</td><td><span class="pendiente">Falta la URL</span></td></tr>
+    <tr><td>Portada completa</td><td>Portada, 1</td><td>Completo (sin URL pública: ejecución local)</td></tr>
     <tr><td>Resumen ejecutivo</td><td>2</td><td>Completo</td></tr>
     <tr><td>Problema, objetivos y alcance</td><td>3</td><td>Completo</td></tr>
     <tr><td>Modelo de negocio explicado</td><td>4</td><td>Completo</td></tr>
-    <tr><td>Planeación con fechas, entregable por fecha y responsables</td><td>5.1</td><td><span class="pendiente">Faltan fechas planeadas de las fases terminadas</span></td></tr>
+    <tr><td>Planeación con fechas, entregable por fecha y responsables</td><td>5.1</td><td>Completo</td></tr>
     <tr><td>Seguimiento planeado vs. real; dependencias y riesgos</td><td>5.2, 5.3</td><td>Completo</td></tr>
     <tr><td>RF, RNF, reglas de negocio y criterios de aceptación</td><td>6</td><td>Completo</td></tr>
     <tr><td>Arquitectura con justificación y flujo punta a punta</td><td>7</td><td>Completo</td></tr>
@@ -1920,7 +1927,7 @@ erDiagram
     <tr><td>Matriz de pruebas</td><td>13</td><td>Completo</td></tr>
     <tr><td>Instalación y ejecución</td><td>14.1, 14.2</td><td>Completo</td></tr>
     <tr><td>Despliegue</td><td>14.3</td><td><span class="pendiente">Pendiente</span></td></tr>
-    <tr><td>Evidencia de Git</td><td>14.4</td><td><span class="pendiente">Falta contribución por integrante</span></td></tr>
+    <tr><td>Evidencia de Git</td><td>14.4</td><td>Completo (versión <code>v1.0.0</code> al entregar)</td></tr>
     <tr><td>Resultados, limitaciones y conclusiones</td><td>15</td><td>Completo</td></tr>
     <tr><td>Anexos técnicos y matriz de trazabilidad</td><td>16</td><td>Completo</td></tr>
   </tbody>
